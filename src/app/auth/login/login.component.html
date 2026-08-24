@@ -1,0 +1,221 @@
+<div class="flex min-h-screen flex-col bg-[#f4f6f9]">
+  <!-- Government / NeST style header -->
+  <header class="bg-[#0b2545] text-white shadow-lg">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+      <div class="flex items-center gap-4">
+        <div
+          class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-[#d4af37] bg-white/10"
+          aria-hidden="true"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-8 w-8 text-[#f4c430]">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25 4.5 5.25v5.25c0 4.875 3.187 9.375 7.5 10.5 4.313-1.125 7.5-5.625 7.5-10.5V5.25L12 2.25Z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 11.25 1.5 1.5 3-3.75" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f4c430] sm:text-xs">
+            United Republic of Tanzania
+          </p>
+          <h1 class="text-base font-bold leading-tight sm:text-xl lg:text-2xl">
+            PUBLIC PROCUREMENT REGULATORY AUTHORITY
+          </h1>
+          <p class="text-xs text-blue-100 sm:text-sm">ICT Equipment Issue &amp; Return Portal</p>
+        </div>
+      </div>
+      <div class="hidden text-right text-xs leading-relaxed text-blue-100 md:block">
+        <p class="font-semibold text-white">PPRA Head Office</p>
+        <p>4<sup>th</sup> Floor, PPF Tower, Ohio Street, Dar es Salaam</p>
+        <p>+255 22 286 1000 &nbsp;|&nbsp; support&#64;ppra.go.tz</p>
+      </div>
+    </div>
+    <div class="h-1.5 bg-gradient-to-r from-[#d4af37] via-[#f4c430] to-[#d4af37]"></div>
+  </header>
+
+  <!-- Center canvas -->
+  <main class="flex flex-1 items-center justify-center px-4 py-8 sm:px-6 lg:py-12">
+    <div class="w-full max-w-5xl overflow-hidden rounded-xl bg-white shadow-xl">
+      <div class="row g-0">
+        <!-- Left institutional panel (desktop) -->
+        <div class="col-lg-5 d-none d-lg-flex flex-col justify-between bg-[#13293d] p-8 text-white lg:p-10">
+          <div>
+            <div class="mb-6 flex items-center gap-3">
+              <span class="inline-block h-2 w-12 rounded-full bg-[#d4af37]"></span>
+              <span class="text-xs font-semibold uppercase tracking-widest text-[#f4c430]">PPRA Portal</span>
+            </div>
+            <h2 class="text-2xl font-bold leading-snug">
+              Secure Access to the ICT Equipment Issue &amp; Return System
+            </h2>
+            <p class="mt-4 text-sm leading-relaxed text-blue-100">
+              Authorised PPRA staff can manage equipment requests, track returns, and monitor asset
+              availability through a single, secure government portal.
+            </p>
+          </div>
+
+          <ul class="mt-8 space-y-4 text-sm">
+            <li class="flex items-start gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 h-5 w-5 shrink-0 text-[#d4af37]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+              </svg>
+              <span>Secure JWT-based authentication for all users</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 h-5 w-5 shrink-0 text-[#d4af37]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+              </svg>
+              <span>Real-time equipment issue and return tracking</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 h-5 w-5 shrink-0 text-[#d4af37]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+              </svg>
+              <span>Compliant with government data protection standards</span>
+            </li>
+          </ul>
+
+          <div class="mt-8 rounded-lg border border-[#d4af37]/40 bg-white/5 p-4">
+            <p class="text-xs leading-relaxed text-blue-100">
+              <span class="font-semibold text-[#f4c430]">Notice:</span>
+              For account activation or password reset assistance, contact the ICT Support Desk on
+              extension 1100 or email support&#64;ppra.go.tz.
+            </p>
+          </div>
+        </div>
+
+        <!-- Right login form panel -->
+        <div class="col-lg-7 p-6 sm:p-10">
+          <div class="mb-8">
+            <h2 class="text-2xl font-bold text-[#0b2545]">Sign In</h2>
+            <p class="mt-1 text-sm text-gray-500">
+              Enter your Employee Check No. or registered email address to continue.
+            </p>
+          </div>
+
+          @if (errorMessage) {
+            <div class="ppra-alert alert alert-danger d-flex align-items-start gap-2" role="alert" aria-live="assertive">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 h-5 w-5 shrink-0">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+              </svg>
+              <div>{{ errorMessage }}</div>
+            </div>
+          }
+
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+            <div class="mb-4">
+              <label class="ppra-form-label form-label" for="employeeIdOrEmail">
+                Employee Check No. or Email
+              </label>
+              <input
+                id="employeeIdOrEmail"
+                type="text"
+                class="ppra-form-control form-control"
+                [class.is-invalid]="employeeIdOrEmailControl.invalid && employeeIdOrEmailControl.touched"
+                formControlName="employeeIdOrEmail"
+                autocomplete="username"
+                placeholder="e.g. EMP-1002 or user@ppra.go.tz"
+                [attr.aria-invalid]="employeeIdOrEmailControl.invalid && employeeIdOrEmailControl.touched"
+                aria-describedby="employeeIdOrEmailError"
+              />
+              @if (employeeIdOrEmailControl.invalid && employeeIdOrEmailControl.touched) {
+                <div id="employeeIdOrEmailError" class="ppra-invalid-feedback invalid-feedback">
+                  @if (employeeIdOrEmailControl.hasError('required')) {
+                    <span>Please enter your Employee Check No. or email address.</span>
+                  }
+                </div>
+              }
+            </div>
+
+            <div class="mb-4">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <label class="ppra-form-label form-label mb-0" for="password">Password</label>
+                <a routerLink="/forgot-password" class="ppra-link text-xs" tabindex="0">Forgot password?</a>
+              </div>
+              <div class="position-relative">
+                <input
+                  id="password"
+                  [type]="showPassword ? 'text' : 'password'"
+                  class="ppra-form-control form-control pe-5"
+                  [class.is-invalid]="passwordControl.invalid && passwordControl.touched"
+                  formControlName="password"
+                  autocomplete="current-password"
+                  placeholder="Enter your password"
+                  [attr.aria-invalid]="passwordControl.invalid && passwordControl.touched"
+                  aria-describedby="passwordError"
+                />
+                <button
+                  type="button"
+                  class="position-absolute top-50 translate-middle-y btn border-0 bg-transparent p-2 text-gray-500 hover:text-[#0b2545]"
+                  style="right: 0.25rem"
+                  (click)="togglePasswordVisibility()"
+                  [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+                  [attr.aria-pressed]="showPassword"
+                >
+                  @if (showPassword) {
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                    </svg>
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+                  }
+                </button>
+              </div>
+              @if (passwordControl.invalid && passwordControl.touched) {
+                <div id="passwordError" class="ppra-invalid-feedback invalid-feedback">
+                  @if (passwordControl.hasError('required')) {
+                    <span>Please enter your password.</span>
+                  } @else if (passwordControl.hasError('minlength')) {
+                    <span>Password must be at least 8 characters long.</span>
+                  }
+                </div>
+              }
+            </div>
+
+            <div class="mb-5 d-flex align-items-center justify-content-between">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="rememberMe" />
+                <label class="form-check-label text-sm text-gray-600" for="rememberMe">
+                  Remember me on this device
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="ppra-primary-btn" [disabled]="isLoading">
+              @if (isLoading) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span>Signing in...</span>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                </svg>
+                <span>Sign In</span>
+              }
+            </button>
+          </form>
+
+          <div class="mt-6 text-center text-sm text-gray-600">
+            Don&rsquo;t have an account?
+            <a routerLink="/register" class="ppra-link">Register here</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-[#0b2545] text-blue-100">
+    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-6 text-center text-xs sm:flex-row sm:px-6 sm:text-left lg:px-8">
+      <p>&copy; 2026 Public Procurement Regulatory Authority. All rights reserved.</p>
+      <nav class="flex flex-wrap justify-center gap-4" aria-label="Footer">
+        <a href="#" class="transition-colors hover:text-[#f4c430]">Privacy Policy</a>
+        <a href="#" class="transition-colors hover:text-[#f4c430]">Terms of Use</a>
+        <a href="#" class="transition-colors hover:text-[#f4c430]">Contact Support</a>
+      </nav>
+    </div>
+    <div class="bg-black/30 px-4 py-2 text-center text-[10px] leading-relaxed text-blue-200/70">
+      This is a secure government information system. Unauthorised access or misuse is prohibited and
+      may lead to disciplinary, civil, or criminal action.
+    </div>
+  </footer>
+</div>
