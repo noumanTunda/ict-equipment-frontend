@@ -1,1 +1,136 @@
-/* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ppra-navy: #1b2a4a;
+  --ppra-navy-light: #2c3e65;
+  --ppra-gold: #d9a01b;
+  --ppra-gold-bright: #ffc107;
+  --ppra-background: #f4f6f9;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--ppra-background);
+  color: #1f2937;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* PPRA / NeST-style Bootstrap form controls */
+.ppra-form-control.form-control,
+.ppra-form-control.form-select {
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #111827;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  transition:
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
+}
+
+.ppra-form-control.form-control:focus,
+.ppra-form-control.form-select:focus {
+  border-color: var(--ppra-navy);
+  box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25);
+}
+
+.ppra-form-control.form-control.is-invalid,
+.ppra-form-control.form-select.is-invalid {
+  border-color: #dc2626;
+  background-image: none;
+}
+
+.ppra-form-control.form-control.is-invalid:focus,
+.ppra-form-control.form-select.is-invalid:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.15);
+}
+
+.ppra-form-label.form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ppra-navy-light);
+  margin-bottom: 0.375rem;
+}
+
+.ppra-invalid-feedback.invalid-feedback {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #dc2626;
+  display: block;
+}
+
+.ppra-alert.alert {
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.ppra-alert.alert-danger {
+  background-color: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.ppra-alert.alert-success {
+  background-color: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.ppra-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  border: 0;
+  border-radius: 0.5rem;
+  background-color: var(--ppra-navy);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out,
+    opacity 0.15s ease-in-out;
+}
+
+.ppra-primary-btn:hover:not(:disabled) {
+  background-color: var(--ppra-navy-light);
+}
+
+.ppra-primary-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.4);
+}
+
+.ppra-primary-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.ppra-link {
+  color: var(--ppra-navy);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ppra-link:hover {
+  color: var(--ppra-gold);
+  text-decoration: underline;
+}
