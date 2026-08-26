@@ -42,7 +42,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     'Other',
   ];
 
-  readonly roles = ['ROLE_STAFF', 'ROLE_ICT_ADMIN', 'ROLE_HEAD_OF_DEPARTMENT'];
+  readonly roles = ['ROLE_STAFF', 'ROLE_ICT_OFFICER', 'ROLE_ADMIN'];
 
   registerForm!: FormGroup<{
     employeeId: FormControl<string>;
