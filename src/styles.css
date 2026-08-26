@@ -3,11 +3,17 @@
 @tailwind utilities;
 
 :root {
-  --ppra-navy: #1b2a4a;
-  --ppra-navy-light: #2c3e65;
-  --ppra-gold: #d9a01b;
-  --ppra-gold-bright: #ffc107;
-  --ppra-background: #f4f6f9;
+  --ict-navy: #1e293b;
+  --ict-navy-light: #334155;
+  --ict-blue: #1394db;
+  --ict-blue-dark: #0f7ab5;
+  --ict-blue-light: #2bb7ff;
+  --ict-gold: #f6d34a;
+  --ict-gold-deep: #d97706;
+  --ict-green: #00b050;
+  --ict-gray: #7f8fa3;
+  --ict-ink: #1e293b;
+  --ict-background: #f8fafc;
 }
 
 html,
@@ -19,15 +25,152 @@ body {
   margin: 0;
   font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
-  background-color: var(--ppra-background);
+  background-color: var(--ict-background);
   color: #1f2937;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* PPRA / NeST-style Bootstrap form controls */
-.ppra-form-control.form-control,
-.ppra-form-control.form-select {
+h1,
+h2,
+h3,
+h4 {
+  font-family: Georgia, 'Times New Roman', serif;
+  text-wrap: balance;
+}
+
+/* RALG-style / NeST-themed form field */
+.ict-field {
+  width: 100%;
+  min-height: 2.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #0f172a;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+.ict-field::placeholder {
+  color: #94a3b8;
+}
+
+.ict-field:focus {
+  border-color: var(--ict-blue);
+  box-shadow: 0 0 0 4px rgba(19, 148, 219, 0.1);
+}
+
+.ict-field.is-invalid {
+  border-color: #f87171;
+}
+
+.ict-field.is-invalid:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+/* Form labels */
+.ict-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Inline validation message */
+.ict-field-error {
+  display: block;
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #b91c1c;
+}
+
+/* Alert boxes */
+.ict-alert {
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.ict-alert-danger {
+  border: 1px solid #fecaca;
+  background-color: #fef2f2;
+  color: #991b1b;
+}
+
+.ict-alert-success {
+  border: 1px solid #bbf7d0;
+  background-color: #f0fdf4;
+  color: #166534;
+}
+
+/* Primary action button - NeST blue */
+.ict-primary-btn {
+  display: inline-flex;
+  min-height: 2.75rem;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background-color: var(--ict-blue);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  line-height: 1.5;
+  padding: 0.625rem 1.25rem;
+  cursor: pointer;
+  box-shadow:
+    0 1px 2px rgba(11, 37, 69, 0.35),
+    inset 0 1px rgba(255, 255, 255, 0.12);
+  transition:
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 140ms ease,
+    opacity 160ms ease;
+}
+
+.ict-primary-btn:hover:not(:disabled) {
+  background-color: var(--ict-blue-dark);
+  box-shadow: 0 4px 14px rgba(11, 37, 69, 0.2);
+}
+
+.ict-primary-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(19, 148, 219, 0.3);
+}
+
+.ict-primary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Inline links */
+.ict-link {
+  color: var(--ict-blue);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ict-link:hover {
+  color: var(--ict-blue-dark);
+  text-decoration: underline;
+}
+
+/* Legacy Bootstrap form helpers (kept for compatibility) */
+.ict-form-control.form-control,
+.ict-form-control.form-select {
   border-radius: 0.5rem;
   padding: 0.625rem 0.875rem;
   font-size: 0.875rem;
@@ -40,97 +183,109 @@ body {
     box-shadow 0.15s ease-in-out;
 }
 
-.ppra-form-control.form-control:focus,
-.ppra-form-control.form-select:focus {
-  border-color: var(--ppra-navy);
-  box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25);
+.ict-form-control.form-control:focus,
+.ict-form-control.form-select:focus {
+  border-color: var(--ict-blue);
+  box-shadow: 0 0 0 0.2rem rgba(19, 148, 219, 0.25);
 }
 
-.ppra-form-control.form-control.is-invalid,
-.ppra-form-control.form-select.is-invalid {
+.ict-form-control.form-control.is-invalid,
+.ict-form-control.form-select.is-invalid {
   border-color: #dc2626;
   background-image: none;
 }
 
-.ppra-form-control.form-control.is-invalid:focus,
-.ppra-form-control.form-select.is-invalid:focus {
+.ict-form-control.form-control.is-invalid:focus,
+.ict-form-control.form-select.is-invalid:focus {
   border-color: #dc2626;
   box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.15);
 }
 
-.ppra-form-label.form-label {
+.ict-form-label.form-label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--ppra-navy-light);
+  color: var(--ict-navy-light);
   margin-bottom: 0.375rem;
 }
 
-.ppra-invalid-feedback.invalid-feedback {
+.ict-invalid-feedback.invalid-feedback {
   font-size: 0.75rem;
   font-weight: 500;
   color: #dc2626;
   display: block;
 }
 
-.ppra-alert.alert {
+.ict-alert.alert {
   border-radius: 0.5rem;
   font-size: 0.875rem;
 }
 
-.ppra-alert.alert-danger {
+.ict-alert.alert-danger {
   background-color: #fef2f2;
   border-color: #fecaca;
   color: #991b1b;
 }
 
-.ppra-alert.alert-success {
+.ict-alert.alert-success {
   background-color: #f0fdf4;
   border-color: #bbf7d0;
   color: #166534;
 }
 
-.ppra-primary-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-  border: 0;
-  border-radius: 0.5rem;
-  background-color: var(--ppra-navy);
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  padding: 0.75rem 1rem;
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease-in-out,
-    box-shadow 0.15s ease-in-out,
-    opacity 0.15s ease-in-out;
+/* Blob animation for animated background */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
 }
 
-.ppra-primary-btn:hover:not(:disabled) {
-  background-color: var(--ppra-navy-light);
+.animate-blob {
+  animation: blob 7s infinite;
 }
 
-.ppra-primary-btn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.4);
+.animation-delay-2000 {
+  animation-delay: 2s;
 }
 
-.ppra-primary-btn:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
+.animation-delay-4000 {
+  animation-delay: 4s;
 }
 
-.ppra-link {
-  color: var(--ppra-navy);
-  font-weight: 600;
-  text-decoration: none;
+/* Chase animation for rotating dots (nest.go.tz style) */
+@keyframes chase {
+  0% {
+    transform: rotate(0deg) translateX(var(--orbit)) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translateX(var(--orbit)) rotate(-360deg);
+  }
 }
 
-.ppra-link:hover {
-  color: var(--ppra-gold);
-  text-decoration: underline;
+.animate-chase {
+  animation: chase 2s cubic-bezier(0.4, 0.1, 0.2, 1) infinite;
+}
+
+.chase-delay-1 {
+  animation-delay: 0s;
+}
+
+.chase-delay-2 {
+  animation-delay: 0.5s;
+}
+
+.chase-delay-3 {
+  animation-delay: 1s;
+}
+
+.chase-delay-4 {
+  animation-delay: 1.5s;
 }

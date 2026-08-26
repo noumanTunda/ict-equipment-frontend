@@ -6,12 +6,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        ppra: {
+        ict: {
           navy: '#0b2545',
-          'navy-light': '#13293d',
-          gold: '#d4af37',
-          'gold-bright': '#f4c430',
-          background: '#f4f6f9',
+          'navy-light': '#1b2a4a',
+          blue: '#1394db',
+          'blue-dark': '#0f7ab5',
+          gold: '#fbd306',
+          'gold-deep': '#d9a01b',
+          green: '#21a43f',
+          ink: '#0e3b40',
+          paper: '#f4f6f9',
         },
       },
       fontFamily: {
@@ -26,6 +30,7 @@ module.exports = {
           'Arial',
           'sans-serif',
         ],
+        serif: ['Georgia', '"Times New Roman"', 'serif'],
       },
     },
   },
