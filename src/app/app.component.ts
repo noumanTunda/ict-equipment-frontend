@@ -9,5 +9,5 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.component.css',
 })
 export class AppComponent {
-  title = 'PPRA ICT Equipment Issue & Return Portal';
+  title = 'ICT Equipment Issue & Return Portal';
 }
