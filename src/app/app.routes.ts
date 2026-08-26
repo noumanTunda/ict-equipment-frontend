@@ -12,12 +12,12 @@ export const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent,
-    title: 'Sign In | PPRA ICT Equipment Portal',
+    title: 'Sign In | ICT Equipment Portal',
   },
   {
     path: 'register',
     component: RegisterComponent,
-    title: 'Create Account | PPRA ICT Equipment Portal',
+    title: 'Create Account | ICT Equipment Portal',
   },
   {
     path: '**',
