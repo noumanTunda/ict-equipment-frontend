@@ -1,160 +1,198 @@
-<div class="flex min-h-screen flex-col bg-[#f4f6f9]">
-  <!-- Government / NeST style header -->
-  <header class="bg-[#0b2545] text-white shadow-lg">
-    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-      <div class="flex items-center gap-4">
-        <div
-          class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-[#d4af37] bg-white/10"
-          aria-hidden="true"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-8 w-8 text-[#f4c430]">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25 4.5 5.25v5.25c0 4.875 3.187 9.375 7.5 10.5 4.313-1.125 7.5-5.625 7.5-10.5V5.25L12 2.25Z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 11.25 1.5 1.5 3-3.75" />
-          </svg>
-        </div>
-        <div>
-          <p class="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f4c430] sm:text-xs">
-            United Republic of Tanzania
-          </p>
-          <h1 class="text-base font-bold leading-tight sm:text-xl lg:text-2xl">
-            PUBLIC PROCUREMENT REGULATORY AUTHORITY
-          </h1>
-          <p class="text-xs text-blue-100 sm:text-sm">ICT Equipment Issue &amp; Return Portal</p>
-        </div>
-      </div>
-      <div class="hidden text-right text-xs leading-relaxed text-blue-100 md:block">
-        <p class="font-semibold text-white">PPRA Head Office</p>
-        <p>4<sup>th</sup> Floor, PPF Tower, Ohio Street, Dar es Salaam</p>
-        <p>+255 22 286 1000 &nbsp;|&nbsp; support&#64;ppra.go.tz</p>
-      </div>
-    </div>
-    <div class="h-1.5 bg-gradient-to-r from-[#d4af37] via-[#f4c430] to-[#d4af37]"></div>
-  </header>
+<main class="h-screen w-full bg-[#e6f4ff] flex items-center justify-center p-0 overflow-hidden">
+  <!-- Full Viewport Container -->
+  <div class="w-full h-full bg-white overflow-hidden flex flex-col">
 
-  <!-- Center canvas -->
-  <main class="flex flex-1 items-center justify-center px-4 py-8 sm:px-6 lg:py-12">
-    <div class="w-full max-w-5xl overflow-hidden rounded-xl bg-white shadow-xl">
-      <div class="row g-0">
-        <!-- Left institutional panel (desktop) -->
-        <div class="col-lg-5 d-none d-lg-flex flex-col justify-between bg-[#13293d] p-8 text-white lg:p-10">
-          <div>
-            <div class="mb-6 flex items-center gap-3">
-              <span class="inline-block h-2 w-12 rounded-full bg-[#d4af37]"></span>
-              <span class="text-xs font-semibold uppercase tracking-widest text-[#f4c430]">PPRA Portal</span>
+    <!-- Top Decorative Accent Bar -->
+    <div class="h-2 w-full bg-gradient-to-r from-[#1394db] via-[#0b2545] to-[#0f7ab5] shrink-0"></div>
+
+    <!-- Main Grid: 70% Left / 30% Right Split -->
+    <div class="grid grid-cols-1 lg:grid-cols-[70%_30%] flex-1 w-full min-h-0 overflow-hidden">
+
+      <!-- LEFT SECTION (70% Width) - Light NeST Hero Style -->
+      <section class="relative hidden flex-col justify-between bg-[#e1f5fe] text-slate-800 lg:flex p-8 xl:p-14 overflow-hidden h-full">
+
+        <!-- Light Gradient Overlay matching the NeST hero background -->
+        <div class="absolute inset-0 bg-gradient-to-br from-[#e1f5fe]/90 via-[#e0f2f1]/80 to-[#d4ecf0]/90 pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col justify-between h-full space-y-8">
+
+          <!-- Header Logo & Identity -->
+          <div class="flex items-center gap-4">
+            <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-white p-2 shadow-md" style="border: 3px solid #1394db;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-full w-full text-[#1394db]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25 4.5 5.25v5.25c0 4.875 3.187 9.375 7.5 10.5 4.313-1.125 7.5-5.625 7.5-10.5V5.25L12 2.25Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 11.25 1.5 1.5 3-3.75" />
+              </svg>
             </div>
-            <h2 class="text-2xl font-bold leading-snug">
-              Secure Access to the ICT Equipment Issue &amp; Return System
-            </h2>
-            <p class="mt-4 text-sm leading-relaxed text-blue-100">
-              Authorised PPRA staff can manage equipment requests, track returns, and monitor asset
-              availability through a single, secure government portal.
+            <div>
+              <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#1394db]">Government of Tanzania</p>
+              <h2 class="text-2xl font-extrabold tracking-tight text-slate-900 xl:text-3xl">
+                ICT Equipment Issue &amp; Return System
+              </h2>
+            </div>
+          </div>
+
+          <!-- Central Value Proposition -->
+          <div class="max-w-3xl my-auto">
+            <h1 class="text-3xl font-extrabold leading-tight text-slate-900 xl:text-5xl">
+              Automated Asset Management &amp; Operational Workflow
+            </h1>
+            <p class="mt-4 text-base leading-relaxed text-slate-600 xl:text-lg">
+              Streamlining secure issuance, return tracking, verification, and audit trail records for institutional ICT equipment.
             </p>
           </div>
 
-          <ul class="mt-8 space-y-4 text-sm">
-            <li class="flex items-start gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 h-5 w-5 shrink-0 text-[#d4af37]">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-              </svg>
-              <span>Secure JWT-based authentication for all users</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 h-5 w-5 shrink-0 text-[#d4af37]">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-              </svg>
-              <span>Real-time equipment issue and return tracking</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 h-5 w-5 shrink-0 text-[#d4af37]">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-              </svg>
-              <span>Compliant with government data protection standards</span>
-            </li>
-          </ul>
+          <!-- 3-Step Process Steps (NeST Workflow Cards) -->
+          <div class="grid gap-4 md:grid-cols-3">
+            <div class="border-l-4 border-[#1394db] bg-white/70 p-4 backdrop-blur-md rounded-r-lg shadow-sm">
+              <p class="text-xs font-black tracking-widest text-[#1394db]">01. REQUEST</p>
+              <h3 class="mt-1 text-sm font-bold text-slate-900">Submit Request</h3>
+              <p class="mt-1 text-xs leading-5 text-slate-600">Staff initialize issue or return applications online.</p>
+            </div>
 
-          <div class="mt-8 rounded-lg border border-[#d4af37]/40 bg-white/5 p-4">
-            <p class="text-xs leading-relaxed text-blue-100">
-              <span class="font-semibold text-[#f4c430]">Notice:</span>
-              For account activation or password reset assistance, contact the ICT Support Desk on
-              extension 1100 or email support&#64;ppra.go.tz.
-            </p>
+            <div class="border-l-4 border-[#00b050] bg-white/70 p-4 backdrop-blur-md rounded-r-lg shadow-sm">
+              <p class="text-xs font-black tracking-widest text-[#00b050]">02. AUTHORIZE</p>
+              <h3 class="mt-1 text-sm font-bold text-slate-900">Approval Flow</h3>
+              <p class="mt-1 text-xs leading-5 text-slate-600">Heads of department review &amp; record formal approvals.</p>
+            </div>
+
+            <div class="border-l-4 border-[#f59e0b] bg-white/70 p-4 backdrop-blur-md rounded-r-lg shadow-sm">
+              <p class="text-xs font-black tracking-widest text-[#f59e0b]">03. PROCESS</p>
+              <h3 class="mt-1 text-sm font-bold text-slate-900">Provision &amp; Close</h3>
+              <p class="mt-1 text-xs leading-5 text-slate-600">ICT personnel fulfill items and update active audit logs.</p>
+            </div>
           </div>
+
+          <!-- Help Desk Footer Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-white/80 px-6 py-4 text-slate-800 backdrop-blur border border-white/60 shadow-sm">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wider text-slate-700">System Support / Help Desk</p>
+              <p class="text-xs text-slate-500">Available Monday–Friday (08:00 - 17:00 EAT)</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-6 text-xs font-semibold">
+              <span class="flex items-center gap-2 text-slate-700">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4 text-[#1394db]">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+                </svg>
+                +255 22 286 1000
+              </span>
+              <span class="flex items-center gap-2 text-slate-700">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4 text-[#1394db]">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                </svg>
+                support&#64;ictequip.com
+              </span>
+            </div>
+          </div>
+
         </div>
+      </section>
 
-        <!-- Right login form panel -->
-        <div class="col-lg-7 p-6 sm:p-10">
-          <div class="mb-8">
-            <h2 class="text-2xl font-bold text-[#0b2545]">Sign In</h2>
-            <p class="mt-1 text-sm text-gray-500">
-              Enter your Employee Check No. or registered email address to continue.
-            </p>
+      <!-- RIGHT SECTION (30% Width) - Login Gateway Form -->
+      <section class="flex flex-col justify-between p-6 sm:p-8 xl:p-10 bg-white overflow-y-auto h-full">
+
+        <!-- Top Mobile Header -->
+        <header class="flex items-center justify-between gap-4 border-b border-slate-100 pb-4 lg:border-none lg:pb-0 shrink-0">
+          <div class="flex items-center gap-3 lg:hidden">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white p-1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-full w-full text-[#1394db]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25 4.5 5.25v5.25c0 4.875 3.187 9.375 7.5 10.5 4.313-1.125 7.5-5.625 7.5-10.5V5.25L12 2.25Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 11.25 1.5 1.5 3-3.75" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold uppercase text-[#1394db]">ICT Equipment System</p>
+              <h1 class="text-xs font-bold text-slate-900 uppercase">Portal Login</h1>
+            </div>
           </div>
+          <a routerLink="/login" class="ml-auto rounded-full bg-[#e6f4ff] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#1394db]">
+            Secure Portal
+          </a>
+        </header>
 
+        <!-- Form Area Container -->
+        <div class="my-auto py-6">
+          <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-[#1394db]">Service Gateway</p>
+          <h2 class="mt-2 text-2xl font-extrabold text-slate-950 xl:text-3xl">Sign In</h2>
+          <p class="mt-2 text-sm text-slate-600">
+            Enter your credentials to manage ICT equipment requests.
+          </p>
+
+          <!-- Dynamic Alert Error Message -->
           @if (errorMessage) {
-            <div class="ppra-alert alert alert-danger d-flex align-items-start gap-2" role="alert" aria-live="assertive">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 h-5 w-5 shrink-0">
+            <div class="alert alert-danger mt-4 flex items-start gap-2 p-3 text-xs rounded-lg" role="alert" aria-live="assertive">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 h-4 w-4 shrink-0">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
               </svg>
               <div>{{ errorMessage }}</div>
             </div>
           }
 
-          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
-            <div class="mb-4">
-              <label class="ppra-form-label form-label" for="employeeIdOrEmail">
-                Employee Check No. or Email
-              </label>
-              <input
-                id="employeeIdOrEmail"
-                type="text"
-                class="ppra-form-control form-control"
-                [class.is-invalid]="employeeIdOrEmailControl.invalid && employeeIdOrEmailControl.touched"
-                formControlName="employeeIdOrEmail"
-                autocomplete="username"
-                placeholder="e.g. EMP-1002 or user@ppra.go.tz"
-                [attr.aria-invalid]="employeeIdOrEmailControl.invalid && employeeIdOrEmailControl.touched"
-                aria-describedby="employeeIdOrEmailError"
-              />
+          <!-- Angular Reactive Form -->
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="mt-6 space-y-4" novalidate>
+
+            <!-- Employee Check No. or Email Field -->
+            <div>
+              <label for="employeeIdOrEmail" class="form-label text-xs font-bold text-slate-700">Employee Check No. / Email</label>
+              <div class="relative mt-1">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                </svg>
+                <input
+                  id="employeeIdOrEmail"
+                  type="text"
+                  class="form-control text-sm pl-10 pr-3 py-2 rounded-lg border-slate-300 focus:border-[#1394db] focus:ring-[#1394db]"
+                  [class.is-invalid]="employeeIdOrEmailControl.invalid && employeeIdOrEmailControl.touched"
+                  formControlName="employeeIdOrEmail"
+                  autocomplete="username"
+                  placeholder="Check No. or Email"
+                  [attr.aria-invalid]="employeeIdOrEmailControl.invalid && employeeIdOrEmailControl.touched"
+                  aria-describedby="employeeIdOrEmailError"
+                />
+              </div>
               @if (employeeIdOrEmailControl.invalid && employeeIdOrEmailControl.touched) {
-                <div id="employeeIdOrEmailError" class="ppra-invalid-feedback invalid-feedback">
+                <span id="employeeIdOrEmailError" class="text-[11px] font-medium text-red-600 mt-1 block">
                   @if (employeeIdOrEmailControl.hasError('required')) {
-                    <span>Please enter your Employee Check No. or email address.</span>
+                    <span>Check No. or email is required.</span>
                   }
-                </div>
+                </span>
               }
             </div>
 
-            <div class="mb-4">
-              <div class="d-flex align-items-center justify-content-between mb-1">
-                <label class="ppra-form-label form-label mb-0" for="password">Password</label>
-                <a routerLink="/forgot-password" class="ppra-link text-xs" tabindex="0">Forgot password?</a>
+            <!-- Password Field -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label for="password" class="form-label text-xs font-bold text-slate-700 mb-0">Password</label>
+                <a routerLink="/forgot-password" class="text-xs font-semibold text-[#1394db] hover:underline">Forgot?</a>
               </div>
-              <div class="position-relative">
+              <div class="relative">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                </svg>
                 <input
                   id="password"
                   [type]="showPassword ? 'text' : 'password'"
-                  class="ppra-form-control form-control pe-5"
+                  class="form-control text-sm px-10 py-2 rounded-lg border-slate-300 focus:border-[#1394db] focus:ring-[#1394db]"
                   [class.is-invalid]="passwordControl.invalid && passwordControl.touched"
                   formControlName="password"
                   autocomplete="current-password"
-                  placeholder="Enter your password"
+                  placeholder="••••••••"
                   [attr.aria-invalid]="passwordControl.invalid && passwordControl.touched"
                   aria-describedby="passwordError"
                 />
                 <button
                   type="button"
-                  class="position-absolute top-50 translate-middle-y btn border-0 bg-transparent p-2 text-gray-500 hover:text-[#0b2545]"
-                  style="right: 0.25rem"
                   (click)="togglePasswordVisibility()"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
                   [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
                   [attr.aria-pressed]="showPassword"
                 >
                   @if (showPassword) {
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-4 w-4">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
                     </svg>
                   } @else {
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-4 w-4">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
                       <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                     </svg>
@@ -162,60 +200,63 @@
                 </button>
               </div>
               @if (passwordControl.invalid && passwordControl.touched) {
-                <div id="passwordError" class="ppra-invalid-feedback invalid-feedback">
+                <span id="passwordError" class="text-[11px] font-medium text-red-600 mt-1 block">
                   @if (passwordControl.hasError('required')) {
-                    <span>Please enter your password.</span>
+                    <span>Password is required.</span>
                   } @else if (passwordControl.hasError('minlength')) {
-                    <span>Password must be at least 8 characters long.</span>
+                    <span>Min. 8 characters required.</span>
                   }
-                </div>
+                </span>
               }
             </div>
 
-            <div class="mb-5 d-flex align-items-center justify-content-between">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="rememberMe" />
-                <label class="form-check-label text-sm text-gray-600" for="rememberMe">
-                  Remember me on this device
-                </label>
-              </div>
-            </div>
+            <!-- Checkbox -->
+            <label class="flex items-start gap-2 text-xs text-slate-600 cursor-pointer pt-1">
+              <input type="checkbox" name="remember" class="form-check-input mt-0.5 h-4 w-4 rounded text-[#1394db] focus:ring-[#1394db]" />
+              <span class="leading-tight">Keep me signed in on this authorized device.</span>
+            </label>
 
-            <button type="submit" class="ppra-primary-btn" [disabled]="isLoading">
+            <!-- Submit Button -->
+            <button
+              type="submit"
+              class="w-full flex justify-center items-center gap-2 rounded-lg bg-[#1394db] hover:bg-[#0f7ab5] text-white font-bold py-2.5 px-4 text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50"
+              [disabled]="isLoading"
+            >
               @if (isLoading) {
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-4 w-4 animate-spin">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
                 <span>Signing in...</span>
               } @else {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25" />
                 </svg>
                 <span>Sign In</span>
               }
             </button>
           </form>
 
-          <div class="mt-6 text-center text-sm text-gray-600">
-            Don&rsquo;t have an account?
-            <a routerLink="/register" class="ppra-link">Register here</a>
+          <!-- Footer Register Link -->
+          <div class="mt-6 border-t border-slate-200 pt-4 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-600">New staff member?</span>
+              <a routerLink="/register" class="inline-flex items-center gap-1 font-bold text-[#1394db] hover:underline">
+                Register here
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-3.5 w-3.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                </svg>
+              </a>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  </main>
 
-  <!-- Footer -->
-  <footer class="bg-[#0b2545] text-blue-100">
-    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-6 text-center text-xs sm:flex-row sm:px-6 sm:text-left lg:px-8">
-      <p>&copy; 2026 Public Procurement Regulatory Authority. All rights reserved.</p>
-      <nav class="flex flex-wrap justify-center gap-4" aria-label="Footer">
-        <a href="#" class="transition-colors hover:text-[#f4c430]">Privacy Policy</a>
-        <a href="#" class="transition-colors hover:text-[#f4c430]">Terms of Use</a>
-        <a href="#" class="transition-colors hover:text-[#f4c430]">Contact Support</a>
-      </nav>
+        <!-- Portal Security Notice Footer -->
+        <p class="text-[10px] text-slate-400 text-center shrink-0">
+          Authorized Access Only. All transactions are logged for audit compliance.
+        </p>
+
+      </section>
+
     </div>
-    <div class="bg-black/30 px-4 py-2 text-center text-[10px] leading-relaxed text-blue-200/70">
-      This is a secure government information system. Unauthorised access or misuse is prohibited and
-      may lead to disciplinary, civil, or criminal action.
-    </div>
-  </footer>
-</div>
+  </div>
+</main>
