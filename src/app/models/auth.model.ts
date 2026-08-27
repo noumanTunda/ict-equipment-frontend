@@ -34,6 +34,16 @@ export interface AuthResponse {
   user: User;
 }
 
+export interface ResetPasswordRequestDto {
+  email: string;
+}
+
+export interface ResetPasswordDto {
+  token: string;
+  newPassword?: string;
+  confirmPassword?: string;
+}
+
 /**
  * Generic Spring Boot ApiResponse wrapper.
  * All REST endpoints in this application return this envelope.

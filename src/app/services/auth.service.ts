@@ -8,7 +8,7 @@ import {
   ApiResponse,
   AuthResponse,
   LoginRequest,
-  RegisterRequest,
+  RegisterRequest, ResetPasswordDto, ResetPasswordRequestDto,
   User,
 } from '../models/auth.model';
 
@@ -37,6 +37,20 @@ export class AuthService {
     return this.http.post<ApiResponse<User>>(
       `${this.authApiUrl}/register`,
       request,
+    );
+  }
+
+  forgotPassword(request: ResetPasswordRequestDto): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(
+      `${this.authApiUrl}/forgot-password`,
+      request
+    );
+  }
+
+  resetPassword(request: ResetPasswordDto): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(
+      `${this.authApiUrl}/reset-password`,
+      request
     );
   }
 
@@ -105,12 +119,31 @@ export class AuthService {
    */
   getErrorMessage(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
-      const apiError = error.error as Partial<ApiResponse<unknown>> | undefined;
+      const apiError = error.error as {
+        message?: string;
+        errors?: Array<{ field?: string; message?: string; defaultMessage?: string }>;
+      } | undefined;
+
+      // Handle Spring MethodArgumentNotValidException field errors
+      if (apiError?.errors && Array.isArray(apiError.errors) && apiError.errors.length > 0) {
+        const firstError = apiError.errors[0];
+        return firstError.message || firstError.defaultMessage || 'Invalid input provided.';
+      }
+
+      // Handle general API error message
       if (apiError?.message) {
+        // If message starts with generic Spring Validation text, clean it up
+        if (apiError.message.includes('Validation failed for argument')) {
+          return 'Validation failed: Please ensure your password meets all complexity requirements.';
+        }
         return apiError.message;
       }
+
       if (error.status === 0) {
         return 'Unable to reach the server. Please check your connection and try again.';
+      }
+      if (error.status === 400) {
+        return 'Invalid request. Please check your inputs and try again.';
       }
       if (error.status === 401) {
         return 'Invalid Employee Check No. or Password.';
