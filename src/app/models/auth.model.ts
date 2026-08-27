@@ -24,6 +24,7 @@ export interface User {
   email: string;
   department: string;
   role: string;
+  mobileNo: string;
   status: string;
 }
 
