@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 
 import {
   ApiResponse,
@@ -38,6 +38,31 @@ export class AuthService {
       `${this.authApiUrl}/register`,
       request,
     );
+  }
+
+  refreshToken(): Observable<AuthResponse> {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      return throwError(() => new Error('No refresh token available'));
+    }
+
+    return this.http
+      .post<ApiResponse<AuthResponse>>(`${this.authApiUrl}/refresh-token`, { refreshToken })
+      .pipe(
+        map((response) => response.payload),
+        tap((payload) => this.saveAuthSession(payload)),
+        catchError((err) => {
+          if (err.status === 404 || err.status === 400) {
+            return this.http
+              .post<ApiResponse<AuthResponse>>(`${this.authApiUrl}/refresh`, { refreshToken })
+              .pipe(
+                map((response) => response.payload),
+                tap((payload) => this.saveAuthSession(payload))
+              );
+          }
+          return throwError(() => err);
+        })
+      );
   }
 
   forgotPassword(request: ResetPasswordRequestDto): Observable<ApiResponse<void>> {
@@ -132,7 +157,6 @@ export class AuthService {
 
       // Handle general API error message
       if (apiError?.message) {
-        // If message starts with generic Spring Validation text, clean it up
         if (apiError.message.includes('Validation failed for argument')) {
           return 'Validation failed: Please ensure your password meets all complexity requirements.';
         }
