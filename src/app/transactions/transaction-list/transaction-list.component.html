@@ -1,0 +1,410 @@
+<div class="p-4 sm:p-6 max-w-7xl mx-auto">
+
+  <div class="table-card">
+    <!-- Table Header Controls -->
+    <div class="table-header">
+      <div class="table-title">
+        <h2>Equipment Transaction Records</h2>
+        <p>Issuance logs, return audits, digital signature verification, and PDF documents.</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="search-box">
+          <input
+            type="text"
+            class="form-input search-input"
+            placeholder="Search code, staff, officer..."
+            [ngModel]="searchTerm()"
+            (ngModelChange)="onSearchChange($event)"
+          />
+        </div>
+
+        @if (canManage) {
+          <button
+            (click)="openDirectIssueModal()"
+            class="action-btn edit-btn !py-2 !px-3.5 font-bold"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="h-4 w-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <span>Direct Issue Equipment</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Filters toolbar -->
+    <div class="flex flex-wrap items-center gap-4 mb-4 pb-3 border-b border-slate-100 text-xs">
+      <div class="flex items-center gap-2">
+        <label class="font-semibold text-slate-500">Status:</label>
+        <select
+          [ngModel]="selectedStatus()"
+          (ngModelChange)="selectedStatus.set($event); loadTransactions()"
+          class="select-input font-medium text-slate-700"
+        >
+          <option value="ALL">All Statuses</option>
+          <option value="PENDING_SIGNATURE">Pending Signature</option>
+          <option value="COMPLETED">Completed</option>
+          <option value="CANCELLED">Cancelled</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <label class="font-semibold text-slate-500">From:</label>
+        <input
+          type="date"
+          [ngModel]="startDateFilter()"
+          (ngModelChange)="startDateFilter.set($event); loadTransactions()"
+          class="form-input !py-1 !px-2 text-xs"
+        />
+      </div>
+
+      <div class="flex items-center gap-2">
+        <label class="font-semibold text-slate-500">To:</label>
+        <input
+          type="date"
+          [ngModel]="endDateFilter()"
+          (ngModelChange)="endDateFilter.set($event); loadTransactions()"
+          class="form-input !py-1 !px-2 text-xs"
+        />
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Transaction Code</th>
+            <th>Staff &amp; Officer</th>
+            <th>Items Overview</th>
+            <th>Signatures</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoading) {
+            <tr>
+              <td colspan="6" class="empty-state">
+                <div class="inline-flex items-center gap-2">
+                  <svg class="animate-spin h-5 w-5 text-[#1394db]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Loading transaction records...</span>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (txn of filteredTransactions(); track txn.id) {
+              <tr>
+                <td class="id-cell">#{{ txn.transactionCode }}</td>
+                <td class="font-medium">
+                  <div>Staff: {{ txn.staffName }}</div>
+                  <div class="text-[11px] text-slate-400">Officer: {{ txn.issuingOfficerName }}</div>
+                </td>
+                <td>
+                  <div class="font-medium text-xs">
+                    <span class="text-emerald-600 font-bold">{{ txn.issuedItems.length || 0 }} Issued</span>
+                    @if (txn.returnedItems.length) {
+                      &bull; <span class="text-sky-600 font-bold">{{ txn.returnedItems.length }} Returned</span>
+                    }
+                  </div>
+                </td>
+                <td>
+                  <div class="flex items-center gap-3 text-[11px] font-semibold">
+                    <span class="flex items-center gap-1" [ngClass]="txn.employeeSignature ? 'text-emerald-600' : 'text-slate-400'">
+                      Staff Signature
+                    </span>
+                    <span class="flex items-center gap-1" [ngClass]="txn.officerSignature ? 'text-emerald-600' : 'text-slate-400'">
+                      Officer Signature
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <span [ngClass]="getStatusClass(txn.status)">
+                    <span class="status-dot"></span>
+                    {{ txn.status.replace('_', ' ') }}
+                  </span>
+                </td>
+                <td class="actions-cell">
+                  <button class="action-btn view-btn" (click)="openDetailModal(txn, $event)">View</button>
+
+                  @if (txn.status === 'PENDING_SIGNATURE') {
+                    <button class="action-btn sign-btn" (click)="openSignModal(txn, $event)">Sign</button>
+                    <button class="action-btn delete-btn" (click)="openCancelModal(txn, $event)">Cancel</button>
+                  }
+
+                  <button
+                    class="action-btn view-btn"
+                    [disabled]="isDownloadingPdf"
+                    (click)="downloadPdf(txn.id, $event)"
+                    title="Download PDF"
+                  >
+                    PDF
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="empty-state">No transaction records found.</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Table Footer & Pagination Controls -->
+    <div class="table-footer">
+      <div class="page-size-selector">
+        <label for="pageSize">Show </label>
+        <select
+          id="pageSize"
+          class="form-input select-input"
+          [ngModel]="pageSize()"
+          (ngModelChange)="onPageSizeChange($event)"
+        >
+          @for (option of pageSizeOptions; track option) {
+            <option [value]="option">{{ option }}</option>
+          }
+        </select>
+        <span> entries per page</span>
+      </div>
+
+      <div class="pagination-container">
+        <span class="footer-info">
+          Showing Page <strong>{{ page() }}</strong> of <strong>{{ totalPages() }}</strong> ({{ totalElements() }} Total)
+        </span>
+        <div class="pagination">
+          <button
+            class="page-btn"
+            [disabled]="page() === 1 || isLoading"
+            (click)="goToPage(page() - 1)"
+          >
+            &laquo; Prev
+          </button>
+
+          <button class="page-btn active">
+            {{ page() }}
+          </button>
+
+          <button
+            class="page-btn"
+            [disabled]="page() === totalPages() || isLoading"
+            (click)="goToPage(page() + 1)"
+          >
+            Next &raquo;
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DUAL SIGNATURE MODAL -->
+  @if (isSignModalOpen && selectedTransaction) {
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div class="bg-white rounded-lg shadow-2xl max-w-xl w-full p-6 sm:p-8 space-y-6 relative border border-slate-100 my-8">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div>
+            <p class="text-xs font-bold uppercase text-[#1394db]">Digital Signature Portal</p>
+            <h2 class="text-xl font-extrabold text-slate-900">Sign Transaction: #{{ selectedTransaction.transactionCode }}</h2>
+          </div>
+          <button (click)="closeModals()" class="text-slate-400 hover:text-slate-700 text-2xl font-bold">&times;</button>
+        </div>
+
+        <div class="p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded text-xs">
+          <strong>Notice:</strong> Submitting signatures completes the transaction and updates equipment statuses.
+        </div>
+
+        <div class="space-y-6">
+          <app-signature-pad
+            #employeeSigPad
+            title="Employee / Staff Signature"
+            [required]="true"
+            (signatureChange)="onEmployeeSigChange($event)"
+          ></app-signature-pad>
+
+          <app-signature-pad
+            #officerSigPad
+            title="ICT Issuing Officer Signature"
+            [required]="true"
+            (signatureChange)="onOfficerSigChange($event)"
+          ></app-signature-pad>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <button (click)="closeModals()" type="button" class="action-btn view-btn !py-2 !px-4">
+            Cancel
+          </button>
+          <button
+            (click)="submitSignatures()"
+            [disabled]="isLoading || !employeeSignatureBase64 || !officerSignatureBase64"
+            class="action-btn edit-btn !py-2 !px-5 font-bold disabled:opacity-50"
+          >
+            Submit Signatures &amp; Complete
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- CANCEL TRANSACTION MODAL -->
+  @if (isCancelModalOpen && selectedTransaction) {
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-lg shadow-2xl max-w-sm w-full p-6 space-y-4 border border-slate-100 text-center">
+        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-rose-600">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-6 w-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </div>
+
+        <h3 class="text-base font-extrabold text-slate-900">Cancel Transaction?</h3>
+        <p class="text-xs text-slate-500">
+          Are you sure you want to cancel <span class="font-bold text-slate-800">#{{ selectedTransaction.transactionCode }}</span>?
+        </p>
+
+        <div class="flex items-center justify-center gap-3 pt-2">
+          <button (click)="closeModals()" class="action-btn view-btn !py-2 !px-4">
+            Keep Transaction
+          </button>
+          <button
+            (click)="confirmCancel()"
+            [disabled]="isLoading"
+            class="action-btn delete-btn !py-2 !px-5 font-bold disabled:opacity-50"
+          >
+            Confirm Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- DIRECT ISSUE MODAL -->
+  @if (isDirectIssueModalOpen) {
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div class="bg-white rounded-lg shadow-2xl max-w-xl w-full p-6 sm:p-8 space-y-6 relative border border-slate-100 my-8 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div>
+            <p class="text-xs font-bold uppercase text-[#1394db]">Direct Issuance</p>
+            <h2 class="text-xl font-extrabold text-slate-900">Issue Equipment directly</h2>
+          </div>
+          <button (click)="closeModals()" class="text-slate-400 hover:text-slate-700 text-2xl font-bold">&times;</button>
+        </div>
+
+        <form [formGroup]="directIssueForm" (ngSubmit)="submitDirectIssue()" class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700">Staff ID *</label>
+              <input type="number" formControlName="staffId" class="form-control text-xs px-3 py-2 rounded border-slate-300" />
+            </div>
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700">Select AVAILABLE Equipment *</label>
+              <select formControlName="assetNumber" class="form-select text-xs px-3 py-2 rounded border-slate-300">
+                @for (eq of availableEquipment; track eq.id) {
+                  <option [value]="eq.assetNumber">{{ eq.assetNumber }} - {{ eq.brandModel }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label text-xs font-bold text-slate-700">Accessories Provided</label>
+            <input type="text" formControlName="accessoriesProvided" class="form-control text-xs px-3 py-2 rounded border-slate-300" />
+          </div>
+
+          <div formGroupName="checklist" class="border border-slate-200 p-4 rounded space-y-3 bg-slate-50/50">
+            <h3 class="text-xs font-extrabold uppercase text-slate-800">Mandatory ICT Checklist</h3>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="form-label text-[11px] font-bold">OS Installed *</label>
+                <input type="text" formControlName="osInstalled" class="form-control text-xs px-2.5 py-1.5 rounded border-slate-300" />
+              </div>
+              <div>
+                <label class="form-label text-[11px] font-bold">Apps System *</label>
+                <input type="text" formControlName="appSystemInstalled" class="form-control text-xs px-2.5 py-1.5 rounded border-slate-300" />
+              </div>
+              <div>
+                <label class="form-label text-[11px] font-bold">Antivirus *</label>
+                <input type="text" formControlName="antiVirusInstalled" class="form-control text-xs px-2.5 py-1.5 rounded border-slate-300" />
+              </div>
+              <div>
+                <label class="form-label text-[11px] font-bold">PDF Reader *</label>
+                <input type="text" formControlName="pdfReaderInstalled" class="form-control text-xs px-2.5 py-1.5 rounded border-slate-300" />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <button (click)="closeModals()" type="button" class="action-btn view-btn !py-2 !px-4">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="isLoading"
+              class="action-btn edit-btn !py-2 !px-5 font-bold disabled:opacity-50"
+            >
+              Issue Equipment
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- DETAIL MODAL -->
+  @if (isDetailModalOpen && selectedTransaction) {
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-lg shadow-2xl max-w-lg w-full p-6 space-y-4 border border-slate-100">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <p class="text-[10px] font-bold uppercase text-[#1394db]">Transaction Document</p>
+            <h2 class="text-lg font-extrabold text-slate-900">#{{ selectedTransaction.transactionCode }}</h2>
+          </div>
+          <button (click)="closeModals()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">&times;</button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div class="p-3 bg-slate-50 rounded space-y-1">
+            <div><span class="font-bold text-slate-900">Staff:</span> {{ selectedTransaction.staffName }}</div>
+            <div><span class="font-bold text-slate-900">Issuing Officer:</span> {{ selectedTransaction.issuingOfficerName }}</div>
+            <div><span class="font-bold text-slate-900">Status:</span> <span [ngClass]="getStatusClass(selectedTransaction.status)"><span class="status-dot"></span> {{ selectedTransaction.status.replace('_', ' ') }}</span></div>
+          </div>
+
+          @if (selectedTransaction.issuedItems.length) {
+            <div>
+              <span class="font-bold text-slate-900 block mb-1">Issued Items:</span>
+              <ul class="space-y-1 list-disc list-inside bg-emerald-50/50 p-2.5 rounded border border-emerald-100">
+                @for (item of selectedTransaction.issuedItems; track item.assetNumber) {
+                  <li><span class="font-bold">{{ item.assetNumber }}</span> ({{ item.equipmentType || 'Equipment' }}) - {{ item.accessoriesProvided || 'No accessories' }}</li>
+                }
+              </ul>
+            </div>
+          }
+
+          @if (selectedTransaction.returnedItems.length) {
+            <div>
+              <span class="font-bold text-slate-900 block mb-1">Returned Items:</span>
+              <ul class="space-y-1 list-disc list-inside bg-sky-50/50 p-2.5 rounded border border-sky-100">
+                @for (item of selectedTransaction.returnedItems; track item.assetNumber) {
+                  <li><span class="font-bold">{{ item.assetNumber }}</span> - Condition: {{ item.itemCondition || 'N/A' }}</li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+
+        <div class="flex items-center justify-between border-t border-slate-100 pt-3">
+          <button (click)="downloadPdf(selectedTransaction.id)" class="action-btn edit-btn !py-1.5 !px-3">
+            Download Official PDF
+          </button>
+          <button (click)="closeModals()" class="action-btn view-btn !py-1.5 !px-4">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>
