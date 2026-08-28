@@ -21,6 +21,13 @@ body {
   height: 100%;
 }
 
+.main-content {
+  max-width: 90rem; /* Or 1440px / 80rem */
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
@@ -34,258 +41,366 @@ body {
 h1,
 h2,
 h3,
-h4 {
+h4,
+h5,
+h6 {
   font-family: "Roboto", "Open Sans", sans-serif;
   text-wrap: balance;
 }
 
-/* RALG-style / NeST-themed form field */
-.ict-field {
-  width: 100%;
-  min-height: 2.75rem;
-  border-radius: 0.5rem;
-  border: 1px solid #cbd5e1;
+/* ==========================================================================
+   Table-Card & Action Controls (Matched from Attached Component Specification)
+   ========================================================================== */
+
+.table-card {
   background-color: #ffffff;
-  padding: 0.625rem 0.875rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* Header & Search */
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.table-title h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 4px 0;
+  color: #171717;
+}
+
+.table-title p {
+  font-size: 0.85rem;
+  color: #737373;
+  margin: 0;
+}
+
+.search-box {
+  width: 280px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 8px 12px;
   font-size: 0.875rem;
-  line-height: 1.5;
-  color: #0f172a;
+  font-family: inherit;
+  color: #171717;
+  background-color: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
   outline: none;
-  transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    background-color 160ms ease;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
 }
 
-.ict-field::placeholder {
-  color: #94a3b8;
-}
-
-.ict-field:focus {
+.form-input:focus {
   border-color: var(--ict-blue);
-  box-shadow: 0 0 0 4px rgba(19, 148, 219, 0.1);
+  box-shadow: 0 0 0 3px rgba(19, 148, 219, 0.1);
 }
 
-.ict-field.is-invalid {
-  border-color: #f87171;
+/* Table Styling */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
 }
 
-.ict-field.is-invalid:focus {
-  border-color: #ef4444;
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
-}
-
-/* Form labels */
-.ict-label {
-  display: block;
-  margin-bottom: 0.5rem;
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
   font-size: 0.875rem;
-  font-weight: 600;
-  color: #1e293b;
+  min-width: 800px;
 }
 
-/* Inline validation message */
-.ict-field-error {
-  display: block;
-  margin-top: 0.375rem;
+.data-table th {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e5e5;
+  font-weight: 600;
+  color: #737373;
   font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background-color: #fafafa;
+}
+
+.data-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e5e5;
+  color: #171717;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.id-cell {
+  color: #737373;
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.font-medium {
   font-weight: 500;
+}
+
+.empty-state {
+  text-align: center;
+  color: #737373;
+  padding: 32px 16px;
+}
+
+/* Status Indicator with Dot */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.825rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: #64748b;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background-color: #f1f5f9;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #94a3b8;
+  display: inline-block;
+}
+
+/* Active / Available State */
+.status-indicator.active,
+.status-indicator.available,
+.status-indicator.approved,
+.status-indicator.completed {
+  color: #15803d;
+  background-color: #f0fdf4;
+}
+
+.status-indicator.active .status-dot,
+.status-indicator.available .status-dot,
+.status-indicator.approved .status-dot,
+.status-indicator.completed .status-dot {
+  background-color: #22c55e;
+}
+
+/* Pending / Issued State */
+.status-indicator.pending,
+.status-indicator.issued {
+  color: #b45309;
+  background-color: #fffbe6;
+}
+
+.status-indicator.pending .status-dot,
+.status-indicator.issued .status-dot {
+  background-color: #f59e0b;
+}
+
+/* Danger / Rejected State */
+.status-indicator.danger,
+.status-indicator.rejected,
+.status-indicator.cancelled,
+.status-indicator.maintenance {
+  color: #b91c1c;
+  background-color: #fef2f2;
+}
+
+.status-indicator.danger .status-dot,
+.status-indicator.rejected .status-dot,
+.status-indicator.cancelled .status-dot,
+.status-indicator.maintenance .status-dot {
+  background-color: #ef4444;
+}
+
+/* Actions Cell Alignment */
+.actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* Base Action Button Style */
+.action-btn {
+  background: none;
+  border: 1px solid transparent;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* View Button */
+.view-btn {
+  color: #475569;
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.view-btn:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+/* Edit Button */
+.edit-btn {
+  color: #2563eb;
+  background-color: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.edit-btn:hover {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+/* Delete Button */
+.delete-btn {
+  color: #dc2626;
+  background-color: #fef2f2;
+  border-color: #fecaca;
+}
+
+.delete-btn:hover {
+  background-color: #fee2e2;
   color: #b91c1c;
 }
 
-/* Alert boxes */
-.ict-alert {
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  line-height: 1.5;
+/* Sign / Approve Button */
+.sign-btn,
+.approve-btn {
+  color: #059669;
+  background-color: #ecfdf5;
+  border-color: #a7f3d0;
 }
 
-.ict-alert-danger {
-  border: 1px solid #fecaca;
-  background-color: #fef2f2;
-  color: #991b1b;
+.sign-btn:hover,
+.approve-btn:hover {
+  background-color: #d1fae5;
+  color: #047857;
 }
 
-.ict-alert-success {
-  border: 1px solid #bbf7d0;
-  background-color: #f0fdf4;
-  color: #166534;
-}
-
-/* Primary action button - NeST blue */
-.ict-primary-btn {
-  display: inline-flex;
-  min-height: 2.75rem;
-  width: 100%;
+/* Footer & Pagination */
+.table-footer {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border: 0;
-  border-radius: 0.5rem;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e5e5;
+  font-size: 0.85rem;
+  color: #737373;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.page-size-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #737373;
+}
+
+.select-input {
+  width: auto;
+  padding: 4px 8px;
+  cursor: pointer;
+  background-color: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+}
+
+.pagination-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pagination {
+  display: flex;
+  gap: 4px;
+}
+
+.page-btn {
+  background-color: #ffffff;
+  border: 1px solid #e5e5e5;
+  color: #171717;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-btn:hover:not(:disabled):not(.active) {
+  border-color: #0f172a;
+}
+
+.page-btn.active {
   background-color: var(--ict-blue);
   color: #ffffff;
-  font-weight: 700;
-  font-size: 0.875rem;
-  letter-spacing: 0.025em;
-  text-transform: uppercase;
-  line-height: 1.5;
-  padding: 0.625rem 1.25rem;
-  cursor: pointer;
-  box-shadow:
-    0 1px 2px rgba(11, 37, 69, 0.35),
-    inset 0 1px rgba(255, 255, 255, 0.12);
-  transition:
-    background-color 160ms ease,
-    box-shadow 160ms ease,
-    transform 140ms ease,
-    opacity 160ms ease;
+  border-color: var(--ict-blue);
 }
 
-.ict-primary-btn:hover:not(:disabled) {
-  background-color: var(--ict-blue-dark);
-  box-shadow: 0 4px 14px rgba(11, 37, 69, 0.2);
-}
-
-.ict-primary-btn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(19, 148, 219, 0.3);
-}
-
-.ict-primary-btn:disabled {
-  opacity: 0.6;
+.page-btn:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-/* Inline links */
-.ict-link {
-  color: var(--ict-blue);
-  font-weight: 700;
-  text-decoration: none;
+@media (max-width: 640px) {
+  .table-card {
+    padding: 16px;
+  }
+  .search-box {
+    width: 100%;
+  }
+  .table-footer {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
 }
 
-.ict-link:hover {
-  color: var(--ict-blue-dark);
-  text-decoration: underline;
-}
-
-/* Legacy Bootstrap form helpers (kept for compatibility) */
+/* RALG / NeST Form controls */
 .ict-form-control.form-control,
 .ict-form-control.form-select {
-  border-radius: 0.5rem;
+  border-radius: 0.375rem;
   padding: 0.625rem 0.875rem;
   font-size: 0.875rem;
   line-height: 1.5;
   color: #111827;
   background-color: #ffffff;
   border: 1px solid #d1d5db;
-  transition:
-    border-color 0.15s ease-in-out,
-    box-shadow 0.15s ease-in-out;
 }
 
 .ict-form-control.form-control:focus,
 .ict-form-control.form-select:focus {
   border-color: var(--ict-blue);
   box-shadow: 0 0 0 0.2rem rgba(19, 148, 219, 0.25);
-}
-
-.ict-form-control.form-control.is-invalid,
-.ict-form-control.form-select.is-invalid {
-  border-color: #dc2626;
-  background-image: none;
-}
-
-.ict-form-control.form-control.is-invalid:focus,
-.ict-form-control.form-select.is-invalid:focus {
-  border-color: #dc2626;
-  box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.15);
-}
-
-.ict-form-label.form-label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--ict-navy-light);
-  margin-bottom: 0.375rem;
-}
-
-.ict-invalid-feedback.invalid-feedback {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #dc2626;
-  display: block;
-}
-
-.ict-alert.alert {
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-}
-
-.ict-alert.alert-danger {
-  background-color: #fef2f2;
-  border-color: #fecaca;
-  color: #991b1b;
-}
-
-.ict-alert.alert-success {
-  background-color: #f0fdf4;
-  border-color: #bbf7d0;
-  color: #166534;
-}
-
-/* Blob animation for animated background */
-@keyframes blob {
-  0% {
-    transform: translate(0px, 0px) scale(1);
-  }
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-  100% {
-    transform: translate(0px, 0px) scale(1);
-  }
-}
-
-.animate-blob {
-  animation: blob 7s infinite;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
-
-.animation-delay-4000 {
-  animation-delay: 4s;
-}
-
-/* Chase animation for rotating dots (nest.go.tz style) */
-@keyframes chase {
-  0% {
-    transform: rotate(0deg) translateX(var(--orbit)) rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg) translateX(var(--orbit)) rotate(-360deg);
-  }
-}
-
-.animate-chase {
-  animation: chase 2s cubic-bezier(0.4, 0.1, 0.2, 1) infinite;
-}
-
-.chase-delay-1 {
-  animation-delay: 0s;
-}
-
-.chase-delay-2 {
-  animation-delay: 0.5s;
-}
-
-.chase-delay-3 {
-  animation-delay: 1s;
-}
-
-.chase-delay-4 {
-  animation-delay: 1.5s;
 }
