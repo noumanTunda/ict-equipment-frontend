@@ -11,6 +11,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 import { LoginRequest } from '../../models/auth.model';
 
 @Component({
@@ -26,15 +27,20 @@ export class LoginComponent implements OnInit, OnDestroy {
   }>;
 
   isLoading = false;
-  errorMessage = '';
   showPassword = false;
 
   private readonly destroy$ = new Subject<void>();
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
 
   ngOnInit(): void {
+    if (this.authService.isLoggedIn()) {
+      this.router.navigate(['/dashboard']);
+      return;
+    }
+
     this.loginForm = this.fb.nonNullable.group({
       employeeIdOrEmail: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -50,8 +56,6 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    this.errorMessage = '';
-
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
@@ -67,13 +71,18 @@ export class LoginComponent implements OnInit, OnDestroy {
       .login(request)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
+        next: (res) => {
           this.isLoading = false;
+          this.toastService.success(
+            'Sign In Successful',
+            `Welcome back, ${res.user?.fullName || 'Staff Member'}!`
+          );
           this.router.navigate(['/dashboard']);
         },
         error: (error: unknown) => {
           this.isLoading = false;
-          this.errorMessage = this.authService.getErrorMessage(error);
+          const msg = this.authService.getErrorMessage(error);
+          this.toastService.error('Authentication Failed', msg);
         },
       });
   }
