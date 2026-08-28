@@ -1,0 +1,461 @@
+<div class="p-4 sm:p-6 max-w-7xl mx-auto">
+
+  <div class="table-card">
+    <!-- Table Header Controls -->
+    <div class="table-header">
+      <div class="table-title">
+        <h2>Equipment Issue &amp; Return Requests</h2>
+        <p>{{ isStaff ? 'Submit applications and track your request history.' : 'Review staff hardware applications, approve allocations, or reject requests.' }}</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="search-box">
+          <input
+            type="text"
+            class="form-input search-input"
+            placeholder="Search by code, staff, reason..."
+            [ngModel]="searchTerm()"
+            (ngModelChange)="onSearchChange($event)"
+          />
+        </div>
+
+        @if (isStaff) {
+          <button
+            (click)="openSubmitModal()"
+            class="action-btn edit-btn !py-2 !px-3.5 font-bold"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="h-4 w-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <span>Submit Request</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Status Tabs for Officer / Admin -->
+    @if (canApprove) {
+      <div class="flex flex-wrap items-center gap-2 mb-4 pb-2 border-b border-slate-100 text-xs">
+        <button
+          (click)="switchTab('PENDING')"
+          class="page-btn"
+          [class.active]="activeStatusTab() === 'PENDING'"
+        >
+          Pending Review
+        </button>
+        <button
+          (click)="switchTab('APPROVED')"
+          class="page-btn"
+          [class.active]="activeStatusTab() === 'APPROVED'"
+        >
+          Approved
+        </button>
+        <button
+          (click)="switchTab('REJECTED')"
+          class="page-btn"
+          [class.active]="activeStatusTab() === 'REJECTED'"
+        >
+          Rejected
+        </button>
+        <button
+          (click)="switchTab('COMPLETED')"
+          class="page-btn"
+          [class.active]="activeStatusTab() === 'COMPLETED'"
+        >
+          Completed
+        </button>
+      </div>
+    }
+
+    <!-- Data Table -->
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Request Code</th>
+            <th>Applicant</th>
+            <th>Type &amp; Equipment</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoading) {
+            <tr>
+              <td colspan="6" class="empty-state">
+                <div class="inline-flex items-center gap-2">
+                  <svg class="animate-spin h-5 w-5 text-[#1394db]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Loading equipment requests...</span>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (reqItem of filteredRequests(); track reqItem.id) {
+              <tr>
+                <td class="id-cell">#{{ reqItem.requestCode }}</td>
+                <td class="font-medium">
+                  <div>{{ reqItem.staffName }}</div>
+                  <div class="text-[11px] text-slate-400">ID: {{ reqItem.staffId }}</div>
+                </td>
+                <td>
+                  <span class="status-indicator">
+                    {{ reqItem.requestType }}
+                  </span>
+                  <div class="text-xs font-medium text-slate-600 mt-0.5">
+                    @if (reqItem.requestType === 'ISSUE') {
+                      Preferred: {{ reqItem.preferredEquipmentType || 'N/A' }}
+                    } @else if (reqItem.requestType === 'RETURN') {
+                      Return: {{ reqItem.returnAssetNumber || 'N/A' }}
+                    } @else {
+                      Return: {{ reqItem.returnAssetNumber }} &rarr; Issue: {{ reqItem.preferredEquipmentType || reqItem.issueAssetNumber || 'Any' }}
+                    }
+                  </div>
+                </td>
+                <td>
+                  <span class="text-xs truncate max-w-xs block" [title]="reqItem.reason">
+                    {{ reqItem.reason }}
+                  </span>
+                </td>
+                <td>
+                  <span [ngClass]="getStatusClass(reqItem.status)">
+                    <span class="status-dot"></span>
+                    {{ reqItem.status }}
+                  </span>
+                </td>
+                <td class="actions-cell">
+                  <button class="action-btn view-btn" (click)="openDetailModal(reqItem, $event)">View</button>
+                  @if (canApprove && reqItem.status === 'PENDING') {
+                    <button class="action-btn sign-btn" (click)="openApproveModal(reqItem, $event)">Approve</button>
+                    <button class="action-btn delete-btn" (click)="openRejectModal(reqItem, $event)">Reject</button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="empty-state">No equipment requests found.</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Table Footer & Pagination Controls -->
+    <div class="table-footer">
+      <div class="page-size-selector">
+        <label for="pageSize">Show </label>
+        <select
+          id="pageSize"
+          class="form-input select-input"
+          [ngModel]="pageSize()"
+          (ngModelChange)="onPageSizeChange($event)"
+        >
+          @for (option of pageSizeOptions; track option) {
+            <option [value]="option">{{ option }}</option>
+          }
+        </select>
+        <span> entries per page</span>
+      </div>
+
+      <div class="pagination-container">
+        <span class="footer-info">
+          Showing Page <strong>{{ page() }}</strong> of <strong>{{ totalPages() }}</strong> ({{ totalElements() }} Total)
+        </span>
+        <div class="pagination">
+          <button
+            class="page-btn"
+            [disabled]="page() === 1 || isLoading"
+            (click)="goToPage(page() - 1)"
+          >
+            &laquo; Prev
+          </button>
+
+          <button class="page-btn active">
+            {{ page() }}
+          </button>
+
+          <button
+            class="page-btn"
+            [disabled]="page() === totalPages() || isLoading"
+            (click)="goToPage(page() + 1)"
+          >
+            Next &raquo;
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBMIT REQUEST MODAL (STAFF) -->
+  @if (isSubmitModalOpen) {
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div class="bg-white rounded-lg shadow-2xl max-w-lg w-full p-6 sm:p-8 space-y-6 relative border border-slate-100 my-8">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div>
+            <p class="text-xs font-bold uppercase text-[#1394db]">Staff Self-Service</p>
+            <h2 class="text-xl font-extrabold text-slate-900">Submit Equipment Application</h2>
+          </div>
+          <button (click)="closeModals()" class="text-slate-400 hover:text-slate-700 text-2xl font-bold">&times;</button>
+        </div>
+
+        <form [formGroup]="requestForm" (ngSubmit)="submitRequest()" class="space-y-4">
+          <div>
+            <label class="form-label text-xs font-bold text-slate-700 mb-2 block">Application Type *</label>
+            <div class="grid grid-cols-3 gap-3">
+              @for (tp of requestTypes; track tp) {
+                <label
+                  class="flex flex-col items-center justify-center p-3 rounded border-2 cursor-pointer transition-all"
+                  [ngClass]="requestForm.get('requestType')?.value === tp ? 'border-[#1394db] bg-[#e6f4ff]/50 text-[#1394db] font-extrabold' : 'border-slate-200 text-slate-600 font-semibold'"
+                >
+                  <input type="radio" formControlName="requestType" [value]="tp" class="sr-only" />
+                  <span class="text-xs">{{ tp }}</span>
+                </label>
+              }
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label text-xs font-bold text-slate-700">Reason for Request *</label>
+            <textarea
+              formControlName="reason"
+              rows="3"
+              placeholder="Provide business justification..."
+              class="form-control text-xs px-3 py-2 rounded border-slate-300 focus:border-[#1394db]"
+            ></textarea>
+          </div>
+
+          @if (requestForm.get('requestType')?.value === 'ISSUE' || requestForm.get('requestType')?.value === 'EXCHANGE') {
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700">Preferred Equipment Type *</label>
+              <select formControlName="preferredEquipmentType" class="form-select text-xs px-3 py-2 rounded border-slate-300 focus:border-[#1394db]">
+                @for (tp of equipmentTypes; track tp) {
+                  <option [value]="tp">{{ tp }}</option>
+                }
+              </select>
+            </div>
+          }
+
+          @if (requestForm.get('requestType')?.value === 'RETURN' || requestForm.get('requestType')?.value === 'EXCHANGE') {
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700">Return Asset Number *</label>
+              <input
+                type="text"
+                formControlName="returnAssetNumber"
+                placeholder="e.g. AST-2023-001"
+                class="form-control text-xs px-3 py-2 rounded border-slate-300 focus:border-[#1394db]"
+              />
+            </div>
+          }
+
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <button (click)="closeModals()" type="button" class="action-btn view-btn !py-2 !px-4">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="isLoading"
+              class="action-btn edit-btn !py-2 !px-5 font-bold disabled:opacity-50"
+            >
+              Submit Request
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- APPROVE REQUEST MODAL -->
+  @if (isApproveModalOpen && selectedRequest) {
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 relative border border-slate-100 my-8 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div>
+            <p class="text-xs font-bold uppercase text-emerald-600">Approval Workflow</p>
+            <h2 class="text-xl font-extrabold text-slate-900">Approve Request: #{{ selectedRequest.requestCode }}</h2>
+          </div>
+          <button (click)="closeModals()" class="text-slate-400 hover:text-slate-700 text-2xl font-bold">&times;</button>
+        </div>
+
+        <form [formGroup]="approveForm" (ngSubmit)="approveRequest()" class="space-y-5">
+          <div class="p-3 bg-slate-50 rounded text-xs space-y-1">
+            <div class="font-bold text-slate-900">Applicant: {{ selectedRequest.staffName }}</div>
+            <div><span class="font-semibold">Type:</span> {{ selectedRequest.requestType }} | <span class="font-semibold">Reason:</span> {{ selectedRequest.reason }}</div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            @if (selectedRequest.requestType === 'ISSUE' || selectedRequest.requestType === 'EXCHANGE') {
+              <div>
+                <label class="form-label text-xs font-bold text-slate-700">Assign Issued Equipment Asset *</label>
+                <select formControlName="issueAssetNumber" class="form-select text-xs px-3 py-2 rounded border-slate-300">
+                  @for (eq of availableEquipment; track eq.id) {
+                    <option [value]="eq.assetNumber">{{ eq.assetNumber }} - {{ eq.brandModel }} ({{ eq.equipmentType }})</option>
+                  } @empty {
+                    <option value="">-- No AVAILABLE equipment --</option>
+                  }
+                </select>
+              </div>
+            }
+
+            @if (selectedRequest.requestType === 'RETURN' || selectedRequest.requestType === 'EXCHANGE') {
+              <div>
+                <label class="form-label text-xs font-bold text-slate-700">Return Equipment Asset *</label>
+                <input
+                  type="text"
+                  formControlName="returnAssetNumber"
+                  class="form-control text-xs px-3 py-2 rounded border-slate-300"
+                />
+              </div>
+            }
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700">Accessories Provided</label>
+              <input type="text" formControlName="accessoriesProvided" class="form-control text-xs px-3 py-2 rounded border-slate-300" />
+            </div>
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700">Return Condition / Remarks</label>
+              <input type="text" formControlName="returnCondition" class="form-control text-xs px-3 py-2 rounded border-slate-300" />
+            </div>
+          </div>
+
+          <div formGroupName="checklist" class="border border-slate-200 p-4 rounded space-y-3 bg-slate-50/50">
+            <h3 class="text-xs font-extrabold uppercase text-slate-800 tracking-wider">Mandatory ICT Checklist</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="form-label text-[11px] font-bold text-slate-700">OS Installed *</label>
+                <input type="text" formControlName="osInstalled" class="form-control text-xs px-2.5 py-1.5 rounded border-slate-300" />
+              </div>
+              <div>
+                <label class="form-label text-[11px] font-bold text-slate-700">Applications Installed *</label>
+                <input type="text" formControlName="appSystemInstalled" class="form-control text-xs px-2.5 py-1.5 rounded border-slate-300" />
+              </div>
+              <div>
+                <label class="form-label text-[11px] font-bold text-slate-700">Antivirus Installed *</label>
+                <input type="text" formControlName="antiVirusInstalled" class="form-control text-xs px-2.5 py-1.5 rounded border-slate-300" />
+              </div>
+              <div>
+                <label class="form-label text-[11px] font-bold text-slate-700">PDF Reader Installed *</label>
+                <input type="text" formControlName="pdfReaderInstalled" class="form-control text-xs px-2.5 py-1.5 rounded border-slate-300" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 pt-2">
+              <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                <input type="checkbox" formControlName="isJoinedToDomain" class="rounded text-[#1394db]" />
+                Joined Domain
+              </label>
+              <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                <input type="checkbox" formControlName="isInstalledVpn" class="rounded text-[#1394db]" />
+                VPN Access
+              </label>
+              <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                <input type="checkbox" formControlName="isInstalledPrinter" class="rounded text-[#1394db]" />
+                Printer Drivers
+              </label>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <button (click)="closeModals()" type="button" class="action-btn view-btn !py-2 !px-4">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="isLoading"
+              class="action-btn sign-btn !py-2 !px-5 font-bold disabled:opacity-50"
+            >
+              Confirm Approval
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- REJECT REQUEST MODAL -->
+  @if (isRejectModalOpen && selectedRequest) {
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-100">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <p class="text-xs font-bold uppercase text-rose-600">Reject Application</p>
+            <h2 class="text-lg font-extrabold text-slate-900">#{{ selectedRequest.requestCode }}</h2>
+          </div>
+          <button (click)="closeModals()" class="text-slate-400 hover:text-slate-700 text-2xl font-bold">&times;</button>
+        </div>
+
+        <form [formGroup]="rejectForm" (ngSubmit)="rejectRequest()" class="space-y-4">
+          <div>
+            <label class="form-label text-xs font-bold text-slate-700">Rejection Reason *</label>
+            <textarea
+              formControlName="rejectionReason"
+              rows="3"
+              placeholder="State clear reasons why request was rejected..."
+              class="form-control text-xs px-3 py-2 rounded border-slate-300 focus:border-rose-500"
+            ></textarea>
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+            <button (click)="closeModals()" type="button" class="action-btn view-btn !py-2 !px-4">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="isLoading"
+              class="action-btn delete-btn !py-2 !px-5 font-bold disabled:opacity-50"
+            >
+              Confirm Rejection
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- DETAIL MODAL -->
+  @if (isDetailModalOpen && selectedRequest) {
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-100">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <p class="text-[10px] font-bold uppercase text-[#1394db]">Request Overview</p>
+            <h2 class="text-lg font-extrabold text-slate-900">#{{ selectedRequest.requestCode }}</h2>
+          </div>
+          <button (click)="closeModals()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">&times;</button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div class="p-3 bg-slate-50 rounded space-y-1">
+            <div><span class="font-bold text-slate-900">Staff:</span> {{ selectedRequest.staffName }}</div>
+            <div><span class="font-bold text-slate-900">Status:</span> <span [ngClass]="getStatusClass(selectedRequest.status)"><span class="status-dot"></span> {{ selectedRequest.status }}</span></div>
+            <div><span class="font-bold text-slate-900">Type:</span> {{ selectedRequest.requestType }}</div>
+          </div>
+
+          <div>
+            <span class="text-slate-400 block font-medium">Reason</span>
+            <p class="text-slate-700 font-semibold">{{ selectedRequest.reason }}</p>
+          </div>
+
+          @if (selectedRequest.rejectionReason) {
+            <div class="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded">
+              <span class="font-bold block">Rejection Reason:</span>
+              <span>{{ selectedRequest.rejectionReason }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="flex justify-end border-t border-slate-100 pt-3">
+          <button (click)="closeModals()" class="action-btn view-btn !py-1.5 !px-4">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>
