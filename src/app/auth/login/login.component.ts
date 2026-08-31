@@ -75,7 +75,7 @@ export class LoginComponent implements OnInit, OnDestroy {
           this.isLoading = false;
           this.toastService.success(
             'Sign In Successful',
-            `Welcome back, ${res.user?.fullName || 'Staff Member'}!`
+            `Welcome back, ${res.user?.fullName || 'Staff Member'}!`,
           );
           this.router.navigate(['/dashboard']);
         },
