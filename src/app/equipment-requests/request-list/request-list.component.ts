@@ -1,6 +1,11 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { RequestService } from '../../services/request.service';
@@ -16,6 +21,7 @@ import {
 } from '../../models/request.model';
 import { Equipment } from '../../models/equipment.model';
 import { User } from '../../models/auth.model';
+import { IctChecklist } from '../../models/transaction.model';
 
 @Component({
   selector: 'app-request-list',
@@ -52,7 +58,14 @@ export class RequestListComponent implements OnInit {
 
   // Options
   requestTypes: RequestType[] = ['ISSUE', 'RETURN', 'EXCHANGE'];
-  equipmentTypes: string[] = ['Laptop', 'Desktop', 'Printer', 'Scanner', 'Server', 'Monitor'];
+  equipmentTypes: string[] = [
+    'Laptop',
+    'Desktop',
+    'Printer',
+    'Scanner',
+    'Server',
+    'Monitor',
+  ];
 
   // Modals
   isSubmitModalOpen = false;
@@ -81,7 +94,9 @@ export class RequestListComponent implements OnInit {
   }
 
   get canApprove(): boolean {
-    return this.userRole === 'ROLE_ADMIN' || this.userRole === 'ROLE_ICT_OFFICER';
+    return (
+      this.userRole === 'ROLE_ADMIN' || this.userRole === 'ROLE_ICT_OFFICER'
+    );
   }
 
   initForms(): void {
@@ -101,12 +116,18 @@ export class RequestListComponent implements OnInit {
       returnRemarks: ['Normal wear and tear'],
       checklist: this.fb.group({
         osInstalled: ['Windows 11 Pro', [Validators.required]],
-        appSystemInstalled: ['Office 365, Enterprise Antivirus', [Validators.required]],
-        antiVirusInstalled: ['Kaspersky Endpoint Security', [Validators.required]],
+        appSystemInstalled: [
+          'Office 365, Enterprise Antivirus',
+          [Validators.required],
+        ],
+        antiVirusInstalled: [
+          'Kaspersky Endpoint Security',
+          [Validators.required],
+        ],
         pdfReaderInstalled: ['Adobe Acrobat Reader', [Validators.required]],
-        isJoinedToDomain: [true, [Validators.required]],
-        isInstalledVpn: [true, [Validators.required]],
-        isInstalledPrinter: [true, [Validators.required]],
+        isJoinedToDomain: [true],
+        isInstalledVpn: [true],
+        isInstalledPrinter: [true],
         additionalNotes: ['Configured for domain staff access'],
       }),
     });
@@ -120,7 +141,9 @@ export class RequestListComponent implements OnInit {
     if (this.canApprove) {
       this.equipmentService.getAllEquipment().subscribe({
         next: (items) => {
-          this.availableEquipment = items.filter((e) => e.status === 'AVAILABLE');
+          this.availableEquipment = items.filter(
+            (e) => e.status === 'AVAILABLE',
+          );
           this.issuedEquipment = items.filter((e) => e.status === 'ISSUED');
         },
         error: () => {},
@@ -133,31 +156,49 @@ export class RequestListComponent implements OnInit {
     const pageIndex = this.page() - 1;
 
     if (this.isStaff) {
-      this.requestService.getMyRequests(pageIndex, this.pageSize(), 'id,desc').subscribe({
-        next: (payload) => {
-          const items = payload.content || [];
-          this.requests.set(items);
-          this.totalElements.set(payload.pageable?.totalElements ?? items.length);
-          this.totalPages.set(payload.pageable?.totalPages ?? 1);
-          this.isLoading = false;
-        },
-        error: (err) => {
-          this.isLoading = false;
-          const msg = this.authService.getErrorMessage(err);
-          this.toastService.error('Failed to load requests', msg);
-        },
-      });
+      this.requestService
+        .getMyRequests(pageIndex, this.pageSize(), 'id,desc')
+        .subscribe({
+          next: (payload) => {
+            const items = payload.content || [];
+            this.requests.set(items);
+            this.totalElements.set(
+              payload.pageable?.totalElements ?? items.length,
+            );
+            this.totalPages.set(payload.pageable?.totalPages ?? 1);
+            this.isLoading = false;
+          },
+          error: (err) => {
+            this.isLoading = false;
+            const msg = this.authService.getErrorMessage(err);
+            this.toastService.error('Failed to load requests', msg);
+          },
+        });
     } else {
-      const status = this.activeStatusTab() === 'ALL' ? undefined : (this.activeStatusTab() as RequestStatus);
+      const status =
+        this.activeStatusTab() === 'ALL'
+          ? undefined
+          : (this.activeStatusTab() as RequestStatus);
       const obs = status
-        ? this.requestService.getRequestsByStatus(status, pageIndex, this.pageSize(), 'id,desc')
-        : this.requestService.getAllPendingRequests(pageIndex, this.pageSize(), 'id,desc');
+        ? this.requestService.getRequestsByStatus(
+            status,
+            pageIndex,
+            this.pageSize(),
+            'id,desc',
+          )
+        : this.requestService.getAllPendingRequests(
+            pageIndex,
+            this.pageSize(),
+            'id,desc',
+          );
 
       obs.subscribe({
         next: (payload) => {
           const items = payload.content || [];
           this.requests.set(items);
-          this.totalElements.set(payload.pageable?.totalElements ?? items.length);
+          this.totalElements.set(
+            payload.pageable?.totalElements ?? items.length,
+          );
           this.totalPages.set(payload.pageable?.totalPages ?? 1);
           this.isLoading = false;
         },
@@ -176,11 +217,12 @@ export class RequestListComponent implements OnInit {
 
     if (!term) return list;
 
-    return list.filter((r) =>
-      r.requestCode.toLowerCase().includes(term) ||
-      r.staffName.toLowerCase().includes(term) ||
-      r.reason.toLowerCase().includes(term) ||
-      r.requestType.toLowerCase().includes(term)
+    return list.filter(
+      (r) =>
+        r.requestCode.toLowerCase().includes(term) ||
+        r.staffName.toLowerCase().includes(term) ||
+        r.reason.toLowerCase().includes(term) ||
+        r.requestType.toLowerCase().includes(term),
     );
   });
 
@@ -220,7 +262,10 @@ export class RequestListComponent implements OnInit {
     this.selectedRequest = reqItem;
 
     this.approveForm.patchValue({
-      issueAssetNumber: reqItem.issueAssetNumber || (this.availableEquipment[0]?.assetNumber || ''),
+      issueAssetNumber:
+        reqItem.issueAssetNumber ||
+        this.availableEquipment[0]?.assetNumber ||
+        '',
       returnAssetNumber: reqItem.returnAssetNumber || '',
     });
 
@@ -257,7 +302,10 @@ export class RequestListComponent implements OnInit {
     const val: CreateEquipmentRequestDto = this.requestForm.value;
 
     if (val.requestType === 'RETURN' && !val.returnAssetNumber) {
-      this.toastService.warning('Validation Error', 'Return Asset Number is required for Return requests.');
+      this.toastService.warning(
+        'Validation Error',
+        'Return Asset Number is required for Return requests.',
+      );
       return;
     }
 
@@ -266,7 +314,10 @@ export class RequestListComponent implements OnInit {
       next: (res) => {
         this.isLoading = false;
         this.closeModals();
-        this.toastService.success('Request Submitted', `Application ${res.requestCode} submitted successfully!`);
+        this.toastService.success(
+          'Request Submitted',
+          `Application ${res.requestCode} submitted successfully!`,
+        );
         this.loadRequests();
       },
       error: (err) => {
@@ -285,14 +336,35 @@ export class RequestListComponent implements OnInit {
     }
 
     const raw = this.approveForm.value;
+    const requestType = this.selectedRequest.requestType;
+
+    const checklist: IctChecklist = {
+      osInstalled: raw.checklist.osInstalled,
+      appSystemInstalled: raw.checklist.appSystemInstalled,
+      antiVirusInstalled: raw.checklist.antiVirusInstalled,
+      pdfReaderInstalled: raw.checklist.pdfReaderInstalled,
+      isJoinedToDomain: !!raw.checklist.isJoinedToDomain,
+      isInstalledVpn: !!raw.checklist.isInstalledVpn,
+      isInstalledPrinter: !!raw.checklist.isInstalledPrinter,
+      additionalNotes: raw.checklist.additionalNotes || undefined,
+    };
+
     const dto: ApproveRequestDto = {
       requestId: this.selectedRequest.id,
-      issueAssetNumber: raw.issueAssetNumber || undefined,
-      returnAssetNumber: raw.returnAssetNumber || undefined,
-      checklist: raw.checklist,
-      accessoriesProvided: raw.accessoriesProvided,
-      returnCondition: raw.returnCondition,
-      returnRemarks: raw.returnRemarks,
+      issueAssetNumber:
+        (requestType === 'ISSUE' || requestType === 'EXCHANGE') &&
+        raw.issueAssetNumber
+          ? raw.issueAssetNumber
+          : undefined,
+      returnAssetNumber:
+        (requestType === 'RETURN' || requestType === 'EXCHANGE') &&
+        raw.returnAssetNumber
+          ? raw.returnAssetNumber
+          : undefined,
+      checklist,
+      accessoriesProvided: raw.accessoriesProvided || undefined,
+      returnCondition: raw.returnCondition || undefined,
+      returnRemarks: raw.returnRemarks || undefined,
     };
 
     this.isLoading = true;
@@ -300,7 +372,10 @@ export class RequestListComponent implements OnInit {
       next: (res) => {
         this.isLoading = false;
         this.closeModals();
-        this.toastService.success('Request Approved', `Request ${res.requestCode} approved and transaction generated.`);
+        this.toastService.success(
+          'Request Approved',
+          `Request ${res.requestCode} approved and transaction generated.`,
+        );
         this.loadRequests();
       },
       error: (err) => {
@@ -319,19 +394,24 @@ export class RequestListComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.requestService.rejectRequest(this.selectedRequest.id, this.rejectForm.value).subscribe({
-      next: (res) => {
-        this.isLoading = false;
-        this.closeModals();
-        this.toastService.info('Request Rejected', `Request ${res.requestCode} has been rejected.`);
-        this.loadRequests();
-      },
-      error: (err) => {
-        this.isLoading = false;
-        const msg = this.authService.getErrorMessage(err);
-        this.toastService.error('Error Rejecting Request', msg);
-      },
-    });
+    this.requestService
+      .rejectRequest(this.selectedRequest.id, this.rejectForm.value)
+      .subscribe({
+        next: (res) => {
+          this.isLoading = false;
+          this.closeModals();
+          this.toastService.info(
+            'Request Rejected',
+            `Request ${res.requestCode} has been rejected.`,
+          );
+          this.loadRequests();
+        },
+        error: (err) => {
+          this.isLoading = false;
+          const msg = this.authService.getErrorMessage(err);
+          this.toastService.error('Error Rejecting Request', msg);
+        },
+      });
   }
 
   getStatusClass(status: RequestStatus): string {
