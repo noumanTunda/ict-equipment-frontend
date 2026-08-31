@@ -112,7 +112,7 @@
                     <button class="action-btn edit-btn" (click)="openEditModal(item, $event)">Edit</button>
                     <button
                       class="action-btn delete-btn"
-                      [disabled]="item.status === 'ISSUED'"
+                      [disabled]="!(item.status === 'AVAILABLE')"
                       (click)="openDeleteModal(item, $event)"
                     >
                       Delete
