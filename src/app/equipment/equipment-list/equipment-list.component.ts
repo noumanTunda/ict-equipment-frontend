@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { EquipmentService } from '../../services/equipment.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
@@ -20,6 +20,7 @@ export class EquipmentListComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
 
   currentUser: User | null = null;
   userRole: string = 'ROLE_STAFF';
@@ -55,6 +56,12 @@ export class EquipmentListComponent implements OnInit {
   ngOnInit(): void {
     this.currentUser = this.authService.getUser();
     this.userRole = this.currentUser?.role || 'ROLE_STAFF';
+
+    if (!this.canManage) {
+      this.router.navigate(['/dashboard/requests']);
+      return;
+    }
+
     this.initForm();
     this.loadEquipment();
   }
@@ -76,6 +83,8 @@ export class EquipmentListComponent implements OnInit {
   }
 
   loadEquipment(): void {
+    if (!this.canManage) return;
+
     this.isLoading = true;
     const pageIndex = this.page() - 1;
 
@@ -245,8 +254,6 @@ export class EquipmentListComponent implements OnInit {
       );
       return;
     }
-
-
 
     this.isLoading = true;
     this.equipmentService.deleteEquipment(this.selectedEquipment.id).subscribe({
