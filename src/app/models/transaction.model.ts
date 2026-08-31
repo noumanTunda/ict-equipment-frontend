@@ -77,8 +77,8 @@ export interface DirectIssueDto {
 }
 
 export interface SignTransactionDto {
-  employeeSignature: string;
-  officerSignature: string;
+  employeeSignature?: string;
+  officerSignature?: string;
 }
 
 export interface TransactionFilterParams {

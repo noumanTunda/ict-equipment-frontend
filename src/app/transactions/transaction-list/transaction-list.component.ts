@@ -1,6 +1,18 @@
-import { Component, inject, OnInit, ViewChild, signal, computed } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  ViewChild,
+  signal,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TransactionService } from '../../services/transaction.service';
@@ -83,8 +95,14 @@ export class TransactionListComponent implements OnInit {
     this.loadAvailableEquipment();
   }
 
+  get isStaff(): boolean {
+    return this.userRole === 'ROLE_STAFF';
+  }
+
   get canManage(): boolean {
-    return this.userRole === 'ROLE_ADMIN' || this.userRole === 'ROLE_ICT_OFFICER';
+    return (
+      this.userRole === 'ROLE_ADMIN' || this.userRole === 'ROLE_ICT_OFFICER'
+    );
   }
 
   initDirectIssueForm(): void {
@@ -95,8 +113,14 @@ export class TransactionListComponent implements OnInit {
       accessoriesProvided: ['Charger, Carrying Case, Wireless Mouse'],
       checklist: this.fb.group({
         osInstalled: ['Windows 11 Pro', [Validators.required]],
-        appSystemInstalled: ['Office 365, Enterprise Antivirus', [Validators.required]],
-        antiVirusInstalled: ['Kaspersky Endpoint Security', [Validators.required]],
+        appSystemInstalled: [
+          'Office 365, Enterprise Antivirus',
+          [Validators.required],
+        ],
+        antiVirusInstalled: [
+          'Kaspersky Endpoint Security',
+          [Validators.required],
+        ],
         pdfReaderInstalled: ['Adobe Acrobat Reader', [Validators.required]],
         isJoinedToDomain: [true],
         isInstalledVpn: [true],
@@ -110,7 +134,9 @@ export class TransactionListComponent implements OnInit {
     if (this.canManage) {
       this.equipmentService.getAllEquipment().subscribe({
         next: (items) => {
-          this.availableEquipment = items.filter((e) => e.status === 'AVAILABLE');
+          this.availableEquipment = items.filter(
+            (e) => e.status === 'AVAILABLE',
+          );
         },
         error: () => {},
       });
@@ -126,6 +152,10 @@ export class TransactionListComponent implements OnInit {
       size: this.pageSize(),
       sort: 'id,desc',
     };
+
+    if (this.isStaff && this.currentUser?.id) {
+      filters.staffId = this.currentUser.id;
+    }
 
     if (this.selectedStatus() !== 'ALL') {
       filters.status = this.selectedStatus() as TransactionStatus;
@@ -159,10 +189,11 @@ export class TransactionListComponent implements OnInit {
 
     if (!term) return list;
 
-    return list.filter((t) =>
-      t.transactionCode.toLowerCase().includes(term) ||
-      t.staffName.toLowerCase().includes(term) ||
-      t.issuingOfficerName.toLowerCase().includes(term)
+    return list.filter(
+      (t) =>
+        t.transactionCode.toLowerCase().includes(term) ||
+        t.staffName.toLowerCase().includes(term) ||
+        t.issuingOfficerName.toLowerCase().includes(term),
     );
   });
 
@@ -227,7 +258,10 @@ export class TransactionListComponent implements OnInit {
     if (!this.selectedTransaction) return;
 
     if (!this.employeeSignatureBase64 || !this.officerSignatureBase64) {
-      this.toastService.warning('Signatures Required', 'Both Employee and Officer signatures are mandatory.');
+      this.toastService.warning(
+        'Signatures Required',
+        'Both Employee and Officer signatures are mandatory.',
+      );
       return;
     }
 
@@ -237,41 +271,48 @@ export class TransactionListComponent implements OnInit {
     };
 
     this.isLoading = true;
-    this.transactionService.submitSignatures(this.selectedTransaction.id, payload).subscribe({
-      next: (updated) => {
-        this.isLoading = false;
-        this.closeModals();
-        this.toastService.success(
-          'Transaction Signed',
-          `Transaction ${updated.transactionCode} signed & completed! Equipment status updated.`
-        );
-        this.loadTransactions();
-      },
-      error: (err) => {
-        this.isLoading = false;
-        const msg = this.authService.getErrorMessage(err);
-        this.toastService.error('Error Signing Transaction', msg);
-      },
-    });
+    this.transactionService
+      .submitSignatures(this.selectedTransaction.id, payload)
+      .subscribe({
+        next: (updated) => {
+          this.isLoading = false;
+          this.closeModals();
+          this.toastService.success(
+            'Transaction Signed',
+            `Transaction ${updated.transactionCode} signed & completed! Equipment status updated.`,
+          );
+          this.loadTransactions();
+        },
+        error: (err) => {
+          this.isLoading = false;
+          const msg = this.authService.getErrorMessage(err);
+          this.toastService.error('Error Signing Transaction', msg);
+        },
+      });
   }
 
   confirmCancel(): void {
     if (!this.selectedTransaction) return;
 
     this.isLoading = true;
-    this.transactionService.cancelTransaction(this.selectedTransaction.id).subscribe({
-      next: (updated) => {
-        this.isLoading = false;
-        this.closeModals();
-        this.toastService.info('Transaction Cancelled', `Transaction ${updated.transactionCode} cancelled.`);
-        this.loadTransactions();
-      },
-      error: (err) => {
-        this.isLoading = false;
-        const msg = this.authService.getErrorMessage(err);
-        this.toastService.error('Error Cancelling Transaction', msg);
-      },
-    });
+    this.transactionService
+      .cancelTransaction(this.selectedTransaction.id)
+      .subscribe({
+        next: (updated) => {
+          this.isLoading = false;
+          this.closeModals();
+          this.toastService.info(
+            'Transaction Cancelled',
+            `Transaction ${updated.transactionCode} cancelled.`,
+          );
+          this.loadTransactions();
+        },
+        error: (err) => {
+          this.isLoading = false;
+          const msg = this.authService.getErrorMessage(err);
+          this.toastService.error('Error Cancelling Transaction', msg);
+        },
+      });
   }
 
   submitDirectIssue(): void {
@@ -300,7 +341,7 @@ export class TransactionListComponent implements OnInit {
         this.closeModals();
         this.toastService.success(
           'Direct Issue Created',
-          `Direct equipment issuance ${created.transactionCode} created! Pending signatures.`
+          `Direct equipment issuance ${created.transactionCode} created! Pending signatures.`,
         );
         this.loadTransactions();
       },
@@ -327,11 +368,17 @@ export class TransactionListComponent implements OnInit {
         link.remove();
         window.URL.revokeObjectURL(url);
         this.isDownloadingPdf = false;
-        this.toastService.success('PDF Downloaded', 'Official transaction PDF file saved.');
+        this.toastService.success(
+          'PDF Downloaded',
+          'Official transaction PDF file saved.',
+        );
       },
       error: () => {
         this.isDownloadingPdf = false;
-        this.toastService.error('PDF Error', 'Failed to generate PDF document.');
+        this.toastService.error(
+          'PDF Error',
+          'Failed to generate PDF document.',
+        );
       },
     });
   }
