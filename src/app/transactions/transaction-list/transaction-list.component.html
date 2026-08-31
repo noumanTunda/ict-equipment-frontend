@@ -190,7 +190,7 @@
                     View
                   </button>
 
-                  @if (txn.status === "PENDING_SIGNATURE") {
+                  @if (txn.status === "PENDING_SIGNATURE" && canManage) {
                     <button
                       class="action-btn sign-btn"
                       (click)="openSignModal(txn, $event)"
@@ -309,19 +309,24 @@
         </div>
 
         <div class="space-y-6">
-          <app-signature-pad
-            #employeeSigPad
-            title="Employee / Staff Signature"
-            [required]="true"
-            (signatureChange)="onEmployeeSigChange($event)"
-          ></app-signature-pad>
+          <div
+            class="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-600"
+          >
+            @if (selectedTransaction.employeeSignature) {
+              Staff signature is already present and visible on the record.
+            } @else {
+              Staff signature has not been captured yet.
+            }
+          </div>
 
-          <app-signature-pad
-            #officerSigPad
-            title="ICT Issuing Officer Signature"
-            [required]="true"
-            (signatureChange)="onOfficerSigChange($event)"
-          ></app-signature-pad>
+          @if (canSignAsOfficer) {
+            <app-signature-pad
+              #officerSigPad
+              title="ICT Issuing Officer Signature"
+              [required]="true"
+              (signatureChange)="onOfficerSigChange($event)"
+            ></app-signature-pad>
+          }
         </div>
 
         <div
@@ -337,11 +342,18 @@
           <button
             (click)="submitSignatures()"
             [disabled]="
-              isLoading || !employeeSignatureBase64 || !officerSignatureBase64
+              isLoading ||
+              (canSignAsOfficer
+                ? !officerSignatureBase64
+                : !employeeSignatureBase64)
             "
             class="action-btn edit-btn !py-2 !px-5 font-bold disabled:opacity-50"
           >
-            Submit Signatures &amp; Complete
+            {{
+              canSignAsOfficer
+                ? "Submit Officer Signature &amp; Complete"
+                : "Submit Signature"
+            }}
           </button>
         </div>
       </div>
@@ -475,56 +487,58 @@
             />
           </div>
 
-          <div
-            formGroupName="checklist"
-            class="border border-slate-200 p-4 rounded space-y-3 bg-slate-50/50"
-          >
-            <h3 class="text-xs font-extrabold uppercase text-slate-800">
-              Mandatory ICT Checklist
-            </h3>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="form-label text-[11px] font-bold"
-                  >OS Installed *</label
-                >
-                <input
-                  type="text"
-                  formControlName="osInstalled"
-                  class="form-control text-xs px-2.5 py-1.5 rounded border-slate-300"
-                />
-              </div>
-              <div>
-                <label class="form-label text-[11px] font-bold"
-                  >Apps System *</label
-                >
-                <input
-                  type="text"
-                  formControlName="appSystemInstalled"
-                  class="form-control text-xs px-2.5 py-1.5 rounded border-slate-300"
-                />
-              </div>
-              <div>
-                <label class="form-label text-[11px] font-bold"
-                  >Antivirus *</label
-                >
-                <input
-                  type="text"
-                  formControlName="antiVirusInstalled"
-                  class="form-control text-xs px-2.5 py-1.5 rounded border-slate-300"
-                />
-              </div>
-              <div>
-                <label class="form-label text-[11px] font-bold"
-                  >PDF Reader *</label
-                >
-                <input
-                  type="text"
-                  formControlName="pdfReaderInstalled"
-                  class="form-control text-xs px-2.5 py-1.5 rounded border-slate-300"
-                />
+          @if (directIssueRequiresChecklist) {
+            <div
+              formGroupName="checklist"
+              class="border border-slate-200 p-4 rounded space-y-3 bg-slate-50/50"
+            >
+              <h3 class="text-xs font-extrabold uppercase text-slate-800">
+                Mandatory ICT Checklist
+              </h3>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="form-label text-[11px] font-bold"
+                    >OS Installed *</label
+                  >
+                  <input
+                    type="text"
+                    formControlName="osInstalled"
+                    class="form-control text-xs px-2.5 py-1.5 rounded border-slate-300"
+                  />
+                </div>
+                <div>
+                  <label class="form-label text-[11px] font-bold"
+                    >Apps System *</label
+                  >
+                  <input
+                    type="text"
+                    formControlName="appSystemInstalled"
+                    class="form-control text-xs px-2.5 py-1.5 rounded border-slate-300"
+                  />
+                </div>
+                <div>
+                  <label class="form-label text-[11px] font-bold"
+                    >Antivirus *</label
+                  >
+                  <input
+                    type="text"
+                    formControlName="antiVirusInstalled"
+                    class="form-control text-xs px-2.5 py-1.5 rounded border-slate-300"
+                  />
+                </div>
+                <div>
+                  <label class="form-label text-[11px] font-bold"
+                    >PDF Reader *</label
+                  >
+                  <input
+                    type="text"
+                    formControlName="pdfReaderInstalled"
+                    class="form-control text-xs px-2.5 py-1.5 rounded border-slate-300"
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          }
 
           <div
             class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100"

@@ -1,5 +1,6 @@
 import {
   Component,
+  DestroyRef,
   inject,
   OnInit,
   ViewChild,
@@ -14,7 +15,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { TransactionService } from '../../services/transaction.service';
 import { EquipmentService } from '../../services/equipment.service';
 import { AuthService } from '../../services/auth.service';
@@ -28,6 +28,7 @@ import {
 import { Equipment } from '../../models/equipment.model';
 import { User } from '../../models/auth.model';
 import { SignaturePadComponent } from '../../shared/signature-pad/signature-pad.component';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-transaction-list',
@@ -36,12 +37,12 @@ import { SignaturePadComponent } from '../../shared/signature-pad/signature-pad.
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    RouterLink,
     SignaturePadComponent,
   ],
   templateUrl: './transaction-list.component.html',
 })
 export class TransactionListComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
   private readonly transactionService = inject(TransactionService);
   private readonly equipmentService = inject(EquipmentService);
   private readonly authService = inject(AuthService);
@@ -105,6 +106,28 @@ export class TransactionListComponent implements OnInit {
     );
   }
 
+  get canSignAsOfficer(): boolean {
+    return this.canManage;
+  }
+
+  get canSignAsStaff(): boolean {
+    return this.isStaff;
+  }
+
+  get directIssueSelectedEquipment(): Equipment | undefined {
+    const assetNumber = this.directIssueForm?.get('assetNumber')?.value;
+    return this.availableEquipment.find(
+      (equipment) => equipment.assetNumber === assetNumber,
+    );
+  }
+
+  get directIssueRequiresChecklist(): boolean {
+    const type = this.directIssueSelectedEquipment?.equipmentType
+      ?.trim()
+      .toUpperCase();
+    return type === 'LAPTOP' || type === 'DESKTOP';
+  }
+
   initDirectIssueForm(): void {
     this.directIssueForm = this.fb.group({
       staffId: [1, [Validators.required]],
@@ -128,6 +151,13 @@ export class TransactionListComponent implements OnInit {
         additionalNotes: ['Provisioned directly via ICT Service Desk'],
       }),
     });
+
+    this.applyDirectIssueChecklistValidators();
+
+    this.directIssueForm
+      .get('assetNumber')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.applyDirectIssueChecklistValidators());
   }
 
   loadAvailableEquipment(): void {
@@ -171,8 +201,12 @@ export class TransactionListComponent implements OnInit {
       next: (payload) => {
         const items = payload.content || [];
         this.transactions.set(items);
-        this.totalElements.set(payload.pageable?.totalElements ?? items.length);
-        this.totalPages.set(payload.pageable?.totalPages ?? 1);
+        const totalElements = payload.pageable?.totalElements ?? items.length;
+        const pageSize = payload.pageable?.pageSize ?? this.pageSize();
+        const derivedTotalPages =
+          pageSize > 0 ? Math.max(1, Math.ceil(totalElements / pageSize)) : 1;
+        this.totalElements.set(totalElements);
+        this.totalPages.set(payload.pageable?.totalPages ?? derivedTotalPages);
         this.isLoading = false;
       },
       error: (err) => {
@@ -235,6 +269,7 @@ export class TransactionListComponent implements OnInit {
   }
 
   openDirectIssueModal(): void {
+    this.applyDirectIssueChecklistValidators();
     this.isDirectIssueModalOpen = true;
   }
 
@@ -257,18 +292,39 @@ export class TransactionListComponent implements OnInit {
   submitSignatures(): void {
     if (!this.selectedTransaction) return;
 
-    if (!this.employeeSignatureBase64 || !this.officerSignatureBase64) {
-      this.toastService.warning(
-        'Signatures Required',
-        'Both Employee and Officer signatures are mandatory.',
-      );
-      return;
+    const payload: SignTransactionDto = {};
+
+    if (this.isStaff) {
+      if (!this.employeeSignatureBase64) {
+        this.toastService.warning(
+          'Signature Required',
+          'Please sign before submitting the transaction.',
+        );
+        return;
+      }
+
+      payload.employeeSignature = this.employeeSignatureBase64;
     }
 
-    const payload: SignTransactionDto = {
-      employeeSignature: this.employeeSignatureBase64,
-      officerSignature: this.officerSignatureBase64,
-    };
+    if (this.canManage) {
+      if (!this.selectedTransaction.employeeSignature) {
+        this.toastService.warning(
+          'Awaiting Staff Signature',
+          'This transaction cannot be completed until the staff member has signed the request.',
+        );
+        return;
+      }
+
+      if (!this.officerSignatureBase64) {
+        this.toastService.warning(
+          'Signature Required',
+          'Please sign as the issuing officer before submitting.',
+        );
+        return;
+      }
+
+      payload.officerSignature = this.officerSignatureBase64;
+    }
 
     this.isLoading = true;
     this.transactionService
@@ -351,6 +407,33 @@ export class TransactionListComponent implements OnInit {
         this.toastService.error('Error Creating Issuance', msg);
       },
     });
+  }
+
+  private applyDirectIssueChecklistValidators(): void {
+    const checklistGroup = this.directIssueForm.get('checklist') as FormGroup;
+    const requiredFields = [
+      'osInstalled',
+      'appSystemInstalled',
+      'antiVirusInstalled',
+      'pdfReaderInstalled',
+    ];
+    const requiresChecklist = this.directIssueRequiresChecklist;
+
+    for (const fieldName of requiredFields) {
+      const control = checklistGroup.get(fieldName);
+      if (!control) {
+        continue;
+      }
+
+      if (requiresChecklist) {
+        control.setValidators([Validators.required]);
+      } else {
+        control.clearValidators();
+      }
+      control.updateValueAndValidity({ emitEvent: false });
+    }
+
+    checklistGroup.updateValueAndValidity({ emitEvent: false });
   }
 
   downloadPdf(txnId: number, event?: Event): void {
