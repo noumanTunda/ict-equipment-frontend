@@ -4,7 +4,8 @@ export type EquipmentStatus =
   | 'AVAILABLE'
   | 'ISSUED'
   | 'RETURNED'
-  | 'MAINTENANCE';
+  | 'MAINTENANCE'
+  | 'DISPOSED';
 
 export interface Equipment {
   id: number;
