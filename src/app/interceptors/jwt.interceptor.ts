@@ -35,7 +35,7 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: unknown) => {
       if (
         error instanceof HttpErrorResponse &&
-        (error.status === 401 || error.status === 403) &&
+        error.status === 401 &&
         !req.url.includes('/auth/login') &&
         !req.url.includes('/auth/register') &&
         !req.url.includes('/auth/refresh')
