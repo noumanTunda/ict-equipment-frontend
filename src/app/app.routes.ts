@@ -9,6 +9,7 @@ import { EquipmentListComponent } from './equipment/equipment-list/equipment-lis
 import { RequestListComponent } from './equipment-requests/request-list/request-list.component';
 import { TransactionListComponent } from './transactions/transaction-list/transaction-list.component';
 import { AuthGuard } from './guards/AuthGuard';
+import { roleRedirectGuard } from './guards/role-redirect.guard';
 
 export const routes: Routes = [
   {
@@ -43,8 +44,9 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'equipment',
         pathMatch: 'full',
+        canActivate: [roleRedirectGuard],
+        children: [],
       },
       {
         path: 'equipment',

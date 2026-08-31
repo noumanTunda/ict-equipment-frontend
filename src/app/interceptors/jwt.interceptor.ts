@@ -1,6 +1,18 @@
 import { inject } from '@angular/core';
-import { HttpInterceptorFn, HttpErrorResponse, HttpRequest, HttpHandlerFn } from '@angular/common/http';
-import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
+import {
+  HttpInterceptorFn,
+  HttpErrorResponse,
+  HttpRequest,
+  HttpHandlerFn,
+} from '@angular/common/http';
+import {
+  BehaviorSubject,
+  catchError,
+  filter,
+  switchMap,
+  take,
+  throwError,
+} from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
 let isRefreshing = false;
@@ -11,7 +23,11 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const token = authService.getToken();
 
   let authReq = req;
-  if (token && req.url.includes('localhost:8080/api/v1') && !req.url.includes('/auth/')) {
+  if (
+    token &&
+    req.url.includes('localhost:8080/api/v1') &&
+    !req.url.includes('/auth/')
+  ) {
     authReq = addTokenHeader(req, token);
   }
 
@@ -27,11 +43,14 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
         return handleExpiredToken(req, next, authService);
       }
       return throwError(() => error);
-    })
+    }),
   );
 };
 
-function addTokenHeader(request: HttpRequest<unknown>, token: string): HttpRequest<unknown> {
+function addTokenHeader(
+  request: HttpRequest<unknown>,
+  token: string,
+): HttpRequest<unknown> {
   return request.clone({
     setHeaders: {
       Authorization: `Bearer ${token}`,
@@ -42,7 +61,7 @@ function addTokenHeader(request: HttpRequest<unknown>, token: string): HttpReque
 function handleExpiredToken(
   request: HttpRequest<unknown>,
   next: HttpHandlerFn,
-  authService: AuthService
+  authService: AuthService,
 ) {
   if (!isRefreshing) {
     isRefreshing = true;
@@ -58,13 +77,13 @@ function handleExpiredToken(
         isRefreshing = false;
         authService.logout();
         return throwError(() => refreshErr);
-      })
+      }),
     );
   } else {
     return refreshTokenSubject.pipe(
       filter((token) => token !== null),
       take(1),
-      switchMap((token) => next(addTokenHeader(request, token!)))
+      switchMap((token) => next(addTokenHeader(request, token!))),
     );
   }
 }
