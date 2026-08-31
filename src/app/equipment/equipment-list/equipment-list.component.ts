@@ -1,6 +1,11 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { EquipmentService } from '../../services/equipment.service';
@@ -40,8 +45,22 @@ export class EquipmentListComponent implements OnInit {
   isLoading = false;
 
   // Options
-  equipmentTypes: string[] = ['Laptop', 'Desktop', 'Printer', 'Scanner', 'Server', 'Monitor', 'UPS', 'Networking'];
-  statusOptions: EquipmentStatus[] = ['AVAILABLE', 'ISSUED', 'RETURNED', 'MAINTENANCE'];
+  equipmentTypes: string[] = [
+    'LAPTOP',
+    'DESKTOP',
+    'PRINTER',
+    'UPS',
+    'SCANNER',
+    'MONITOR',
+    'OTHER',
+  ];
+
+  statusOptions: EquipmentStatus[] = [
+    'AVAILABLE',
+    'ISSUED',
+    'RETURNED',
+    'MAINTENANCE',
+  ];
 
   // Modals
   isCreateModalOpen = false;
@@ -67,14 +86,19 @@ export class EquipmentListComponent implements OnInit {
   }
 
   get canManage(): boolean {
-    return this.userRole === 'ROLE_ADMIN' || this.userRole === 'ROLE_ICT_OFFICER';
+    return (
+      this.userRole === 'ROLE_ADMIN' || this.userRole === 'ROLE_ICT_OFFICER'
+    );
   }
 
   initForm(): void {
     this.equipmentForm = this.fb.group({
-      assetNumber: ['', [Validators.required, Validators.pattern(/^[A-Z0-9-]+$/i)]],
+      assetNumber: [
+        '',
+        [Validators.required, Validators.pattern(/^[A-Z0-9-]+$/i)],
+      ],
       serialNumber: ['', [Validators.required]],
-      equipmentType: ['Laptop', [Validators.required]],
+      equipmentType: ['LAPTOP', [Validators.required]],
       brandModel: ['', [Validators.required]],
       supplierDetails: ['', [Validators.required]],
       description: ['', [Validators.required]],
@@ -88,20 +112,24 @@ export class EquipmentListComponent implements OnInit {
     this.isLoading = true;
     const pageIndex = this.page() - 1;
 
-    this.equipmentService.getEquipmentPaginated(pageIndex, this.pageSize(), 'id,desc').subscribe({
-      next: (payload) => {
-        const items = payload.content || [];
-        this.equipmentList.set(items);
-        this.totalElements.set(payload.pageable?.totalElements ?? items.length);
-        this.totalPages.set(payload.pageable?.totalPages ?? 1);
-        this.isLoading = false;
-      },
-      error: (err) => {
-        this.isLoading = false;
-        const msg = this.authService.getErrorMessage(err);
-        this.toastService.error('Failed to load equipment', msg);
-      },
-    });
+    this.equipmentService
+      .getEquipmentPaginated(pageIndex, this.pageSize(), 'id,desc')
+      .subscribe({
+        next: (payload) => {
+          const items = payload.content || [];
+          this.equipmentList.set(items);
+          this.totalElements.set(
+            payload.pageable?.totalElements ?? items.length,
+          );
+          this.totalPages.set(payload.pageable?.totalPages ?? 1);
+          this.isLoading = false;
+        },
+        error: (err) => {
+          this.isLoading = false;
+          const msg = this.authService.getErrorMessage(err);
+          this.toastService.error('Failed to load equipment', msg);
+        },
+      });
   }
 
   // Computed signal for filtering
@@ -146,7 +174,7 @@ export class EquipmentListComponent implements OnInit {
 
   openCreateModal(): void {
     this.equipmentForm.reset({
-      equipmentType: 'Laptop',
+      equipmentType: 'LAPTOP',
       status: 'AVAILABLE',
     });
     this.equipmentForm.get('assetNumber')?.enable();
@@ -214,7 +242,7 @@ export class EquipmentListComponent implements OnInit {
           this.closeModals();
           this.toastService.success(
             'Equipment Created',
-            `Asset ${created.assetNumber} has been added to inventory.`
+            `Asset ${created.assetNumber} has been added to inventory.`,
           );
           this.loadEquipment();
         },
@@ -225,22 +253,24 @@ export class EquipmentListComponent implements OnInit {
         },
       });
     } else if (this.isEditModalOpen && this.selectedEquipment) {
-      this.equipmentService.updateEquipment(this.selectedEquipment.id, formRaw).subscribe({
-        next: (updated) => {
-          this.isLoading = false;
-          this.closeModals();
-          this.toastService.success(
-            'Equipment Updated',
-            `Asset ${updated.assetNumber} record updated.`
-          );
-          this.loadEquipment();
-        },
-        error: (err) => {
-          this.isLoading = false;
-          const msg = this.authService.getErrorMessage(err);
-          this.toastService.error('Error Updating Equipment', msg);
-        },
-      });
+      this.equipmentService
+        .updateEquipment(this.selectedEquipment.id, formRaw)
+        .subscribe({
+          next: (updated) => {
+            this.isLoading = false;
+            this.closeModals();
+            this.toastService.success(
+              'Equipment Updated',
+              `Asset ${updated.assetNumber} record updated.`,
+            );
+            this.loadEquipment();
+          },
+          error: (err) => {
+            this.isLoading = false;
+            const msg = this.authService.getErrorMessage(err);
+            this.toastService.error('Error Updating Equipment', msg);
+          },
+        });
     }
   }
 
@@ -250,7 +280,7 @@ export class EquipmentListComponent implements OnInit {
     if (this.selectedEquipment.status === 'ISSUED') {
       this.toastService.warning(
         'Action Restricted',
-        'Cannot delete equipment that is currently issued to staff.'
+        'Cannot delete equipment that is currently issued to staff.',
       );
       return;
     }
@@ -262,7 +292,7 @@ export class EquipmentListComponent implements OnInit {
         this.closeModals();
         this.toastService.success(
           'Equipment Deleted',
-          `Asset record was successfully removed.`
+          `Asset record was successfully removed.`,
         );
         this.loadEquipment();
       },

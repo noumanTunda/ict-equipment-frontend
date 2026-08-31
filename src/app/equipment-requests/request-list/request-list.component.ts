@@ -59,12 +59,13 @@ export class RequestListComponent implements OnInit {
   // Options
   requestTypes: RequestType[] = ['ISSUE', 'RETURN', 'EXCHANGE'];
   equipmentTypes: string[] = [
-    'Laptop',
-    'Desktop',
-    'Printer',
-    'Scanner',
-    'Server',
-    'Monitor',
+    'LAPTOP',
+    'DESKTOP',
+    'PRINTER',
+    'UPS',
+    'SCANNER',
+    'MONITOR',
+    'OTHER',
   ];
 
   // Modals
@@ -103,7 +104,7 @@ export class RequestListComponent implements OnInit {
     this.requestForm = this.fb.group({
       requestType: ['ISSUE' as RequestType, [Validators.required]],
       reason: ['', [Validators.required, Validators.minLength(5)]],
-      preferredEquipmentType: ['Laptop'],
+      preferredEquipmentType: ['LAPTOP'],
       returnAssetNumber: [''],
       issueAssetNumber: [''],
     });
@@ -252,7 +253,7 @@ export class RequestListComponent implements OnInit {
   openSubmitModal(): void {
     this.requestForm.reset({
       requestType: 'ISSUE',
-      preferredEquipmentType: 'Laptop',
+      preferredEquipmentType: 'LAPTOP',
     });
     this.isSubmitModalOpen = true;
   }
