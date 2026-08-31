@@ -7,9 +7,9 @@ import {
   Validators,
 } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { RequestService } from '../../services/request.service';
 import { EquipmentService } from '../../services/equipment.service';
+import { TransactionService } from '../../services/transaction.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import {
@@ -21,17 +21,24 @@ import {
 } from '../../models/request.model';
 import { Equipment } from '../../models/equipment.model';
 import { User } from '../../models/auth.model';
-import { IctChecklist } from '../../models/transaction.model';
+import { IctChecklist, ReturnCondition } from '../../models/transaction.model';
+import { SignaturePadComponent } from '../../shared/signature-pad/signature-pad.component';
 
 @Component({
   selector: 'app-request-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    SignaturePadComponent,
+  ],
   templateUrl: './request-list.component.html',
 })
 export class RequestListComponent implements OnInit {
   private readonly requestService = inject(RequestService);
   private readonly equipmentService = inject(EquipmentService);
+  private readonly transactionService = inject(TransactionService);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   private readonly fb = inject(FormBuilder);
@@ -51,10 +58,13 @@ export class RequestListComponent implements OnInit {
   totalPages = signal<number>(1);
 
   isLoading = false;
+  isLoadingReturnAssets = false;
 
   // Equipment cache
+  allEquipment: Equipment[] = [];
   availableEquipment: Equipment[] = [];
   issuedEquipment: Equipment[] = [];
+  returnAssetOptions: Equipment[] = [];
 
   // Options
   requestTypes: RequestType[] = ['ISSUE', 'RETURN', 'EXCHANGE'];
@@ -67,6 +77,9 @@ export class RequestListComponent implements OnInit {
     'MONITOR',
     'OTHER',
   ];
+  returnConditions: ReturnCondition[] = ['GOOD', 'FAIR', 'DAMAGED', 'OBSOLETE'];
+
+  requestSignatureBase64: string | null = null;
 
   // Modals
   isSubmitModalOpen = false;
@@ -107,13 +120,14 @@ export class RequestListComponent implements OnInit {
       preferredEquipmentType: ['LAPTOP'],
       returnAssetNumber: [''],
       issueAssetNumber: [''],
+      employeeSignature: [null as string | null],
     });
 
     this.approveForm = this.fb.group({
       issueAssetNumber: [''],
       returnAssetNumber: [''],
       accessoriesProvided: ['Charger, Mouse, Carrying Bag'],
-      returnCondition: ['GOOD'],
+      returnCondition: ['GOOD' as ReturnCondition],
       returnRemarks: ['Normal wear and tear'],
       checklist: this.fb.group({
         osInstalled: ['Windows 11 Pro', [Validators.required]],
@@ -142,6 +156,7 @@ export class RequestListComponent implements OnInit {
     if (this.canApprove) {
       this.equipmentService.getAllEquipment().subscribe({
         next: (items) => {
+          this.allEquipment = items;
           this.availableEquipment = items.filter(
             (e) => e.status === 'AVAILABLE',
           );
@@ -163,10 +178,7 @@ export class RequestListComponent implements OnInit {
           next: (payload) => {
             const items = payload.content || [];
             this.requests.set(items);
-            this.totalElements.set(
-              payload.pageable?.totalElements ?? items.length,
-            );
-            this.totalPages.set(payload.pageable?.totalPages ?? 1);
+            this.resolvePageInfo(payload, items);
             this.isLoading = false;
           },
           error: (err) => {
@@ -197,10 +209,7 @@ export class RequestListComponent implements OnInit {
         next: (payload) => {
           const items = payload.content || [];
           this.requests.set(items);
-          this.totalElements.set(
-            payload.pageable?.totalElements ?? items.length,
-          );
-          this.totalPages.set(payload.pageable?.totalPages ?? 1);
+          this.resolvePageInfo(payload, items);
           this.isLoading = false;
         },
         error: (err) => {
@@ -226,6 +235,34 @@ export class RequestListComponent implements OnInit {
         r.requestType.toLowerCase().includes(term),
     );
   });
+
+  get approvalEquipmentOptions(): Equipment[] {
+    if (!this.selectedRequest) {
+      return [];
+    }
+
+    const preferredType =
+      this.selectedRequest.preferredEquipmentType?.trim().toUpperCase() || '';
+    if (!preferredType) {
+      return this.availableEquipment;
+    }
+
+    return this.availableEquipment.filter(
+      (equipment) =>
+        equipment.equipmentType.trim().toUpperCase() === preferredType,
+    );
+  }
+
+  get requiresChecklist(): boolean {
+    const type = this.selectedRequest?.preferredEquipmentType
+      ?.trim()
+      .toUpperCase();
+    return !!type && (type === 'LAPTOP' || type === 'DESKTOP');
+  }
+
+  get selectedRequestHasSignature(): boolean {
+    return !!this.selectedRequest?.employeeSignature;
+  }
 
   onSearchChange(term: string): void {
     this.searchTerm.set(term);
@@ -254,13 +291,19 @@ export class RequestListComponent implements OnInit {
     this.requestForm.reset({
       requestType: 'ISSUE',
       preferredEquipmentType: 'LAPTOP',
+      employeeSignature: null,
     });
+    this.requestSignatureBase64 = null;
+    if (this.isStaff && this.currentUser?.id) {
+      this.loadReturnAssetOptions(this.currentUser.id);
+    }
     this.isSubmitModalOpen = true;
   }
 
   openApproveModal(reqItem: EquipmentRequest, event?: Event): void {
     event?.stopPropagation();
     this.selectedRequest = reqItem;
+    this.returnAssetOptions = [];
 
     this.approveForm.patchValue({
       issueAssetNumber:
@@ -268,7 +311,14 @@ export class RequestListComponent implements OnInit {
         this.availableEquipment[0]?.assetNumber ||
         '',
       returnAssetNumber: reqItem.returnAssetNumber || '',
+      returnCondition: 'GOOD',
     });
+
+    if (reqItem.staffId) {
+      this.loadReturnAssetOptions(reqItem.staffId);
+    }
+
+    this.configureApprovalChecklistValidators();
 
     this.isApproveModalOpen = true;
   }
@@ -294,6 +344,132 @@ export class RequestListComponent implements OnInit {
     this.selectedRequest = null;
   }
 
+  onRequestSignatureChange(signature: string | null): void {
+    this.requestSignatureBase64 = signature;
+    this.requestForm.get('employeeSignature')?.setValue(signature);
+  }
+
+  private loadReturnAssetOptions(staffId: number): void {
+    this.isLoadingReturnAssets = true;
+
+    this.transactionService
+      .getTransactions({
+        staffId,
+        page: 0,
+        size: 200,
+        sort: 'id,desc',
+      })
+      .subscribe({
+        next: (payload) => {
+          const transactions = payload.content || [];
+          const issuedAssetNumbers = new Set<string>();
+          const returnedAssetNumbers = new Set<string>();
+          const issuedAssetMeta = new Map<
+            string,
+            { equipmentType: string; brandModel: string }
+          >();
+
+          for (const transaction of transactions) {
+            for (const issued of transaction.issuedItems || []) {
+              issuedAssetNumbers.add(issued.assetNumber);
+              issuedAssetMeta.set(issued.assetNumber, {
+                equipmentType: issued.equipmentType || 'Equipment',
+                brandModel:
+                  issued.accessoriesProvided ||
+                  issued.equipmentType ||
+                  'Issued Asset',
+              });
+            }
+
+            for (const returned of transaction.returnedItems || []) {
+              returnedAssetNumbers.add(returned.assetNumber);
+            }
+          }
+
+          this.returnAssetOptions = Array.from(issuedAssetNumbers)
+            .filter((assetNumber) => !returnedAssetNumbers.has(assetNumber))
+            .map((assetNumber) => {
+              const equipment = this.allEquipment.find(
+                (item) => item.assetNumber === assetNumber,
+              );
+
+              if (equipment) {
+                return equipment;
+              }
+
+              const meta = issuedAssetMeta.get(assetNumber);
+              return {
+                id: 0,
+                assetNumber,
+                serialNumber: '',
+                equipmentType: meta?.equipmentType || 'Equipment',
+                brandModel: meta?.brandModel || 'Issued Asset',
+                supplierDetails: '',
+                description: '',
+                status: 'ISSUED',
+                createdAt: '',
+                updatedAt: '',
+              } as Equipment;
+            });
+          this.isLoadingReturnAssets = false;
+        },
+        error: () => {
+          this.returnAssetOptions = [];
+          this.isLoadingReturnAssets = false;
+        },
+      });
+  }
+
+  private resolvePageInfo(
+    payload: {
+      pageable?: {
+        totalElements?: number;
+        totalPages?: number;
+        pageSize?: number;
+      };
+      totalElements?: number;
+      totalPages?: number;
+    },
+    items: EquipmentRequest[],
+  ): void {
+    const totalElements =
+      payload.pageable?.totalElements ?? payload.totalElements ?? items.length;
+    const pageSize = payload.pageable?.pageSize ?? this.pageSize();
+    const derivedTotalPages =
+      pageSize > 0 ? Math.max(1, Math.ceil(totalElements / pageSize)) : 1;
+
+    this.totalElements.set(totalElements);
+    this.totalPages.set(
+      payload.pageable?.totalPages ?? payload.totalPages ?? derivedTotalPages,
+    );
+  }
+
+  private configureApprovalChecklistValidators(): void {
+    const checklistGroup = this.approveForm.get('checklist') as FormGroup;
+    const requiredFields = [
+      'osInstalled',
+      'appSystemInstalled',
+      'antiVirusInstalled',
+      'pdfReaderInstalled',
+    ];
+
+    for (const fieldName of requiredFields) {
+      const control = checklistGroup.get(fieldName);
+      if (!control) {
+        continue;
+      }
+
+      if (this.requiresChecklist) {
+        control.setValidators([Validators.required]);
+      } else {
+        control.clearValidators();
+      }
+      control.updateValueAndValidity({ emitEvent: false });
+    }
+
+    checklistGroup.updateValueAndValidity({ emitEvent: false });
+  }
+
   submitRequest(): void {
     if (this.requestForm.invalid) {
       this.requestForm.markAllAsTouched();
@@ -301,6 +477,14 @@ export class RequestListComponent implements OnInit {
     }
 
     const val: CreateEquipmentRequestDto = this.requestForm.value;
+
+    if (this.isStaff && !val.employeeSignature) {
+      this.toastService.warning(
+        'Signature Required',
+        'Please sign the request before submitting it.',
+      );
+      return;
+    }
 
     if (val.requestType === 'RETURN' && !val.returnAssetNumber) {
       this.toastService.warning(
