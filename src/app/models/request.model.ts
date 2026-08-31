@@ -1,6 +1,6 @@
 import { ApiResponse } from './auth.model';
 import { PaginatedPayload } from './equipment.model';
-import { IctChecklist } from './transaction.model';
+import { IctChecklist, ReturnCondition } from './transaction.model';
 
 export type RequestType = 'ISSUE' | 'RETURN' | 'EXCHANGE';
 export type RequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED';
@@ -10,6 +10,7 @@ export interface EquipmentRequest {
   requestCode: string;
   staffId: number;
   staffName: string;
+  employeeSignature: string | null;
   requestType: RequestType;
   reason: string;
   returnAssetNumber: string | null;
@@ -31,6 +32,7 @@ export interface CreateEquipmentRequestDto {
   returnAssetNumber?: string;
   issueAssetNumber?: string;
   preferredEquipmentType?: string;
+  employeeSignature?: string;
 }
 
 export interface ApproveRequestDto {
@@ -39,7 +41,7 @@ export interface ApproveRequestDto {
   returnAssetNumber?: string;
   checklist: IctChecklist;
   accessoriesProvided?: string;
-  returnCondition?: string;
+  returnCondition?: ReturnCondition;
   returnRemarks?: string;
 }
 
