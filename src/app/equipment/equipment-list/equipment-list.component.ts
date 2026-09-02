@@ -14,6 +14,26 @@ import { ToastService } from '../../services/toast.service';
 import { Equipment, EquipmentStatus } from '../../models/equipment.model';
 import { User } from '../../models/auth.model';
 
+export interface ApiResponse<T> {
+  status: number;
+  message: string;
+  data: T;
+}
+
+export interface PageableInfo {
+  pageNumber: number;
+  pageSize: number;
+  totalElements?: number;
+  totalPages?: number;
+}
+
+export interface SpringPage<T> {
+  content: T[];
+  pageable: PageableInfo;
+  totalElements?: number;
+  totalPages?: number;
+}
+
 @Component({
   selector: 'app-equipment-list',
   standalone: true,
