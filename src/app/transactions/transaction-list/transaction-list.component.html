@@ -332,13 +332,29 @@
             }
           </div>
 
-          @if (canSignAsOfficer) {
+          @if (canCaptureEmployeeSignature) {
+            <app-signature-pad
+              #employeeSigPad
+              title="Staff Signature"
+              [required]="true"
+              (signatureChange)="onEmployeeSigChange($event)"
+            ></app-signature-pad>
+          }
+
+          @if (canCaptureOfficerSignature) {
             <app-signature-pad
               #officerSigPad
               title="ICT Issuing Officer Signature"
               [required]="true"
               (signatureChange)="onOfficerSigChange($event)"
             ></app-signature-pad>
+          } @else if (canManage && !selectedTransaction.employeeSignature) {
+            <div
+              class="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800"
+            >
+              Staff's signature is required before the officer signature can be
+              submitted.
+            </div>
           }
         </div>
 
@@ -356,16 +372,20 @@
             (click)="submitSignatures()"
             [disabled]="
               isLoading ||
-              (canSignAsOfficer
-                ? !officerSignatureBase64
-                : !employeeSignatureBase64)
+              (canCaptureEmployeeSignature
+                ? !employeeSignatureBase64
+                : canCaptureOfficerSignature
+                  ? !officerSignatureBase64
+                  : true)
             "
             class="action-btn edit-btn !py-2 !px-5 font-bold disabled:opacity-50"
           >
             {{
-              canSignAsOfficer
-                ? "Submit Officer Signature &amp; Complete"
-                : "Submit Signature"
+              canCaptureEmployeeSignature
+                ? "Submit Staff Signature"
+                : canCaptureOfficerSignature
+                  ? "Submit Officer Signature &amp; Complete"
+                  : "No Signature Needed"
             }}
           </button>
         </div>
