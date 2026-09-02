@@ -7,7 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { EquipmentService } from '../../services/equipment.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
@@ -37,7 +37,7 @@ export interface SpringPage<T> {
 @Component({
   selector: 'app-equipment-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './equipment-list.component.html',
 })
 export class EquipmentListComponent implements OnInit {
@@ -64,7 +64,6 @@ export class EquipmentListComponent implements OnInit {
 
   isLoading = false;
 
-  // Options
   equipmentTypes: string[] = [
     'LAPTOP',
     'DESKTOP',
@@ -83,14 +82,12 @@ export class EquipmentListComponent implements OnInit {
     'DISPOSED',
   ];
 
-  // Modals
   isCreateModalOpen = false;
   isEditModalOpen = false;
   isDeleteModalOpen = false;
   isDetailModalOpen = false;
   selectedEquipment: Equipment | null = null;
 
-  // Forms
   equipmentForm!: FormGroup;
 
   ngOnInit(): void {
@@ -162,7 +159,7 @@ export class EquipmentListComponent implements OnInit {
 
           this.isLoading = false;
         },
-        error: (err) => {
+        error: (err: any) => {
           this.isLoading = false;
           const msg = this.authService.getErrorMessage(err);
           this.toastService.error('Failed to load equipment', msg);
@@ -170,23 +167,24 @@ export class EquipmentListComponent implements OnInit {
       });
   }
 
-  // Computed signal for filtering
+  // Computed signal for client-side filtering
   filteredEquipment = computed(() => {
     const list = this.equipmentList();
-    const term = this.searchTerm().toLowerCase().trim();
-    const st = this.selectedStatus();
+    const st = this.normalizeStatus(this.selectedStatus());
     const tp = this.selectedType();
+    const term = this.searchTerm().toLowerCase().trim();
 
     return list.filter((item) => {
-      const matchesStatus = st === 'ALL' || item.status === st;
+      const matchesStatus =
+        st === 'ALL' || this.normalizeStatus(item.status) === st;
       const matchesType = tp === 'ALL' || item.equipmentType === tp;
       const matchesSearch =
         !term ||
-        item.assetNumber.toLowerCase().includes(term) ||
-        item.serialNumber.toLowerCase().includes(term) ||
-        item.brandModel.toLowerCase().includes(term) ||
-        item.description.toLowerCase().includes(term) ||
-        item.supplierDetails.toLowerCase().includes(term);
+        item.assetNumber?.toLowerCase().includes(term) ||
+        item.serialNumber?.toLowerCase().includes(term) ||
+        item.brandModel?.toLowerCase().includes(term) ||
+        item.description?.toLowerCase().includes(term) ||
+        item.supplierDetails?.toLowerCase().includes(term);
 
       return matchesStatus && matchesType && matchesSearch;
     });
@@ -194,7 +192,6 @@ export class EquipmentListComponent implements OnInit {
 
   onSearchChange(term: string): void {
     this.searchTerm.set(term);
-    this.page.set(1);
   }
 
   onPageSizeChange(size: number): void {
@@ -212,7 +209,7 @@ export class EquipmentListComponent implements OnInit {
   }
 
   goToPage(p: number): void {
-    if (p >= 1 && p <= this.totalPages()) {
+    if (p >= 1 && p <= this.totalPages() && !this.isLoading) {
       this.page.set(p);
       this.loadEquipment();
     }
@@ -283,7 +280,7 @@ export class EquipmentListComponent implements OnInit {
 
     if (this.isCreateModalOpen) {
       this.equipmentService.createEquipment(formRaw).subscribe({
-        next: (created) => {
+        next: (created: Equipment) => {
           this.isLoading = false;
           this.closeModals();
           this.toastService.success(
@@ -292,7 +289,7 @@ export class EquipmentListComponent implements OnInit {
           );
           this.loadEquipment();
         },
-        error: (err) => {
+        error: (err: any) => {
           this.isLoading = false;
           const msg = this.authService.getErrorMessage(err);
           this.toastService.error('Error Creating Equipment', msg);
@@ -302,7 +299,7 @@ export class EquipmentListComponent implements OnInit {
       this.equipmentService
         .updateEquipment(this.selectedEquipment.id, formRaw)
         .subscribe({
-          next: (updated) => {
+          next: (updated: Equipment) => {
             this.isLoading = false;
             this.closeModals();
             this.toastService.success(
@@ -311,7 +308,7 @@ export class EquipmentListComponent implements OnInit {
             );
             this.loadEquipment();
           },
-          error: (err) => {
+          error: (err: any) => {
             this.isLoading = false;
             const msg = this.authService.getErrorMessage(err);
             this.toastService.error('Error Updating Equipment', msg);
@@ -342,7 +339,7 @@ export class EquipmentListComponent implements OnInit {
         );
         this.loadEquipment();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.isLoading = false;
         const msg = this.authService.getErrorMessage(err);
         this.toastService.error('Error Deleting Equipment', msg);
@@ -351,7 +348,7 @@ export class EquipmentListComponent implements OnInit {
   }
 
   getStatusClass(status: EquipmentStatus): string {
-    switch (status) {
+    switch (this.normalizeStatus(status)) {
       case 'AVAILABLE':
         return 'status-indicator active';
       case 'ISSUED':
@@ -365,5 +362,11 @@ export class EquipmentListComponent implements OnInit {
       default:
         return 'status-indicator';
     }
+  }
+
+  private normalizeStatus(status: string): string {
+    return (
+      status?.trim().toUpperCase().replace('MAINTENACE', 'MAINTENANCE') || 'ALL'
+    );
   }
 }
