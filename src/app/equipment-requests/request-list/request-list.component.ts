@@ -458,6 +458,38 @@ export class RequestListComponent implements OnInit {
     );
   }
 
+  private normalizeEquipmentType(type?: string | null): string {
+    return type?.trim().toUpperCase() || '';
+  }
+
+  private hydrateMissingPreferredEquipmentTypes(
+    requests: EquipmentRequest[],
+  ): void {
+    const missingRequests = requests.filter(
+      (request) => !this.normalizeEquipmentType(request.preferredEquipmentType),
+    );
+
+    if (!missingRequests.length) {
+      return;
+    }
+
+    forkJoin(
+      missingRequests.map((request) =>
+        this.requestService.getRequestById(request.id),
+      ),
+    ).subscribe({
+      next: (hydratedRequests) => {
+        const hydratedById = new Map(
+          hydratedRequests.map((request) => [request.id, request]),
+        );
+
+        this.requests.set(
+          requests.map((request) => hydratedById.get(request.id) ?? request),
+        );
+      },
+    });
+  }
+
   private configureApprovalChecklistValidators(): void {
     const checklistGroup = this.approveForm.get('checklist') as FormGroup;
     const requiredFields = [
