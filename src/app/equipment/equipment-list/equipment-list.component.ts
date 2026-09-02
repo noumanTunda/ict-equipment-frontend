@@ -80,6 +80,7 @@ export class EquipmentListComponent implements OnInit {
     'ISSUED',
     'RETURNED',
     'MAINTENANCE',
+    'DISPOSED',
   ];
 
   // Modals
