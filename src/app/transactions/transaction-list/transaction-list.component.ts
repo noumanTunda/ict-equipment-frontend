@@ -114,6 +114,31 @@ export class TransactionListComponent implements OnInit {
     return this.isStaff;
   }
 
+  get selectedTransactionHasEmployeeSignature(): boolean {
+    return !!this.selectedTransaction?.employeeSignature;
+  }
+
+  get selectedTransactionHasOfficerSignature(): boolean {
+    return !!this.selectedTransaction?.officerSignature;
+  }
+
+  get canCaptureEmployeeSignature(): boolean {
+    return (
+      !!this.selectedTransaction &&
+      this.isStaff &&
+      !this.selectedTransactionHasEmployeeSignature
+    );
+  }
+
+  get canCaptureOfficerSignature(): boolean {
+    return (
+      !!this.selectedTransaction &&
+      this.canManage &&
+      this.selectedTransactionHasEmployeeSignature &&
+      !this.selectedTransactionHasOfficerSignature
+    );
+  }
+
   get directIssueSelectedEquipment(): Equipment | undefined {
     const assetNumber = this.directIssueForm?.get('assetNumber')?.value;
     return this.availableEquipment.find(
@@ -294,7 +319,7 @@ export class TransactionListComponent implements OnInit {
 
     const payload: SignTransactionDto = {};
 
-    if (this.isStaff) {
+    if (this.canCaptureEmployeeSignature) {
       if (!this.employeeSignatureBase64) {
         this.toastService.warning(
           'Signature Required',
@@ -306,8 +331,8 @@ export class TransactionListComponent implements OnInit {
       payload.employeeSignature = this.employeeSignatureBase64;
     }
 
-    if (this.canManage) {
-      if (!this.selectedTransaction.employeeSignature) {
+    if (this.canCaptureOfficerSignature) {
+      if (!this.selectedTransactionHasEmployeeSignature) {
         this.toastService.warning(
           'Awaiting Staff Signature',
           'This transaction cannot be completed until the staff member has signed the request.',
@@ -324,6 +349,14 @@ export class TransactionListComponent implements OnInit {
       }
 
       payload.officerSignature = this.officerSignatureBase64;
+    }
+
+    if (!this.canCaptureEmployeeSignature && !this.canCaptureOfficerSignature) {
+      this.toastService.warning(
+        'Nothing to Submit',
+        'This transaction already has the available signatures.',
+      );
+      return;
     }
 
     this.isLoading = true;
