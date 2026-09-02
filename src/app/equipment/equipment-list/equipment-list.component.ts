@@ -148,10 +148,18 @@ export class EquipmentListComponent implements OnInit {
           const items = pageData?.content || [];
 
           this.equipmentList.set(items);
-          this.totalElements.set(
-            payload.pageable?.totalElements ?? items.length,
-          );
-          this.totalPages.set(payload.pageable?.totalPages ?? 1);
+
+          const total =
+            pageData?.pageable?.totalElements ??
+            pageData?.totalElements ??
+            items.length;
+
+          const pages =
+            pageData?.pageable?.totalPages ?? pageData?.totalPages ?? 1;
+
+          this.totalElements.set(Number(total));
+          this.totalPages.set(Number(pages));
+
           this.isLoading = false;
         },
         error: (err) => {
