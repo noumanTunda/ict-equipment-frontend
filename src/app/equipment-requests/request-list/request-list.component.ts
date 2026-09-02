@@ -552,7 +552,15 @@ export class RequestListComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.requestService.submitRequest(val).subscribe({
+    this.requestService
+      .submitRequest({
+        ...val,
+        preferredEquipmentType: val.preferredEquipmentType
+          ?.trim()
+          .toUpperCase(),
+        employeeSignature: employeeSignature ?? undefined,
+      })
+      .subscribe({
       next: (res) => {
         this.isLoading = false;
         this.closeModals();
