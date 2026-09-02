@@ -39,7 +39,7 @@
         <label class="font-semibold text-slate-500">Status:</label>
         <select
           [ngModel]="selectedStatus()"
-          (ngModelChange)="selectedStatus.set($event)"
+          (ngModelChange)="onStatusChange($event)"
           class="select-input font-medium text-slate-700"
         >
           <option value="ALL">All Statuses</option>
@@ -53,7 +53,7 @@
         <label class="font-semibold text-slate-500">Type:</label>
         <select
           [ngModel]="selectedType()"
-          (ngModelChange)="selectedType.set($event)"
+          (ngModelChange)="onTypeChange($event)"
           class="select-input font-medium text-slate-700"
         >
           <option value="ALL">All Equipment Types</option>
@@ -122,7 +122,7 @@
               </tr>
             } @empty {
               <tr>
-                <td colspan="6" class="empty-state">No equipment units found matching your search.</td>
+                <td colspan="6" class="empty-state">No equipment units found matching your criteria.</td>
               </tr>
             }
           }
@@ -141,7 +141,7 @@
           (ngModelChange)="onPageSizeChange($event)"
         >
           @for (option of pageSizeOptions; track option) {
-            <option [value]="option">{{ option }}</option>
+            <option [ngValue]="option">{{ option }}</option>
           }
         </select>
         <span> entries per page</span>
