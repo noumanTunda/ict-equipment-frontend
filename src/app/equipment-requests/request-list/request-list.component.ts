@@ -523,6 +523,8 @@ export class RequestListComponent implements OnInit {
     }
 
     const val: CreateEquipmentRequestDto = this.requestForm.value;
+    const employeeSignature =
+      this.requestSignatureBase64 ?? val.employeeSignature ?? null;
 
     if (this.isStaff && !val.employeeSignature) {
       this.toastService.warning(
