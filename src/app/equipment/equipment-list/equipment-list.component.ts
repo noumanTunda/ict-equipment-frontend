@@ -135,8 +135,17 @@ export class EquipmentListComponent implements OnInit {
     this.equipmentService
       .getEquipmentPaginated(pageIndex, this.pageSize(), 'id,desc')
       .subscribe({
-        next: (payload) => {
-          const items = payload.content || [];
+        next: (
+          response:
+            | ApiResponse<SpringPage<Equipment>>
+            | SpringPage<Equipment>
+            | any,
+        ) => {
+          const pageData: SpringPage<Equipment> = response?.data
+            ? response.data
+            : response;
+          const items = pageData?.content || [];
+
           this.equipmentList.set(items);
           this.totalElements.set(
             payload.pageable?.totalElements ?? items.length,
