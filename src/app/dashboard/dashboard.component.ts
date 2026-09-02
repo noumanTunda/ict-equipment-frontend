@@ -260,7 +260,7 @@ export class DashboardComponent implements OnInit {
           },
           {
             label: 'Pending Requests',
-            value: String(pendingRequests.pageable?.totalElements ?? 0),
+            value: String(pendingRequests.pageable?.totalElements ?? "N/A"),
             note: 'Requests waiting for review.',
             tone: 'rose',
           },
