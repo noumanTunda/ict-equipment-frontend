@@ -203,6 +203,14 @@ export class EquipmentListComponent implements OnInit {
     this.loadEquipment();
   }
 
+  onStatusChange(status: string): void {
+    this.selectedStatus.set(this.normalizeStatus(status));
+  }
+
+  onTypeChange(type: string): void {
+    this.selectedType.set(type);
+  }
+
   goToPage(p: number): void {
     if (p >= 1 && p <= this.totalPages()) {
       this.page.set(p);
