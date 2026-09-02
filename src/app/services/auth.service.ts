@@ -8,7 +8,9 @@ import {
   ApiResponse,
   AuthResponse,
   LoginRequest,
-  RegisterRequest, ResetPasswordDto, ResetPasswordRequestDto,
+  RegisterRequest,
+  ResetPasswordDto,
+  ResetPasswordRequestDto,
   User,
 } from '../models/auth.model';
 
@@ -47,35 +49,41 @@ export class AuthService {
     }
 
     return this.http
-      .post<ApiResponse<AuthResponse>>(`${this.authApiUrl}/refresh-token`, { refreshToken })
+      .post<
+        ApiResponse<AuthResponse>
+      >(`${this.authApiUrl}/refresh`, { refreshToken })
       .pipe(
         map((response) => response.payload),
         tap((payload) => this.saveAuthSession(payload)),
         catchError((err) => {
           if (err.status === 404 || err.status === 400) {
             return this.http
-              .post<ApiResponse<AuthResponse>>(`${this.authApiUrl}/refresh`, { refreshToken })
+              .post<
+                ApiResponse<AuthResponse>
+              >(`${this.authApiUrl}/refresh-token`, { refreshToken })
               .pipe(
                 map((response) => response.payload),
-                tap((payload) => this.saveAuthSession(payload))
+                tap((payload) => this.saveAuthSession(payload)),
               );
           }
           return throwError(() => err);
-        })
+        }),
       );
   }
 
-  forgotPassword(request: ResetPasswordRequestDto): Observable<ApiResponse<void>> {
+  forgotPassword(
+    request: ResetPasswordRequestDto,
+  ): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(
       `${this.authApiUrl}/forgot-password`,
-      request
+      request,
     );
   }
 
   resetPassword(request: ResetPasswordDto): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(
       `${this.authApiUrl}/reset-password`,
-      request
+      request,
     );
   }
 
@@ -144,15 +152,29 @@ export class AuthService {
    */
   getErrorMessage(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
-      const apiError = error.error as {
-        message?: string;
-        errors?: Array<{ field?: string; message?: string; defaultMessage?: string }>;
-      } | undefined;
+      const apiError = error.error as
+        | {
+            message?: string;
+            errors?: Array<{
+              field?: string;
+              message?: string;
+              defaultMessage?: string;
+            }>;
+          }
+        | undefined;
 
       // Handle Spring MethodArgumentNotValidException field errors
-      if (apiError?.errors && Array.isArray(apiError.errors) && apiError.errors.length > 0) {
+      if (
+        apiError?.errors &&
+        Array.isArray(apiError.errors) &&
+        apiError.errors.length > 0
+      ) {
         const firstError = apiError.errors[0];
-        return firstError.message || firstError.defaultMessage || 'Invalid input provided.';
+        return (
+          firstError.message ||
+          firstError.defaultMessage ||
+          'Invalid input provided.'
+        );
       }
 
       // Handle general API error message
