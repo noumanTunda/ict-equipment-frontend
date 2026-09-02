@@ -297,7 +297,15 @@ export class DashboardComponent implements OnInit {
   }
 
   isRouteActive(path: string): boolean {
-    return this.router.url.includes(path);
+    const currentUrl = this.router.url;
+    // return this.router.url.includes(path);
+
+    if (path === 'dashboard') {
+      // Matches exact '/dashboard' or '/dashboard/' root path only
+      return currentUrl === '/dashboard' || currentUrl === '/dashboard/';
+    }
+    // For sub-routes like 'requests', 'transactions', 'equipment'
+    return currentUrl.includes(`/dashboard/${path}`);
   }
 
   logout(): void {
