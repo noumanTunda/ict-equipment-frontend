@@ -328,7 +328,7 @@
           <span
             class="font-bold text-[#1394db] bg-[#e6f4ff] px-2.5 py-1 rounded-md border border-[#1394db]/20"
           >
-            {{ currentUser?.employeeId || "EMP-1001" }}
+            {{ currentUser?.employeeId || "EMP-N/A" }}
           </span>
         </div>
       </div>
@@ -344,7 +344,7 @@
               {{ userRole.replace("ROLE_", "").replace("_", " ") }}
             </span>
             <span class="text-[11px] font-medium text-slate-500">
-              &bull; {{ currentUser?.department || "GENERAL" }}
+              &bull; {{ currentUser?.department || "Not Specified" }}
             </span>
           </div>
         </div>
@@ -475,7 +475,7 @@
                         <td>
                           <div class="font-medium">{{ req.requestType }}</div>
                           <div class="text-[11px] text-slate-400">
-                            {{ req.preferredEquipmentType || "Any type" }}
+                            {{ req.preferredEquipmentType || "Not Specified" }}
                           </div>
                         </td>
                         <td>
