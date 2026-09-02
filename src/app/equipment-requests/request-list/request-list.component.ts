@@ -332,6 +332,15 @@ export class RequestListComponent implements OnInit {
       this.loadReturnAssetOptions(reqItem.staffId);
     }
 
+    if (!this.normalizeEquipmentType(reqItem.preferredEquipmentType)) {
+      this.requestService.getRequestById(reqItem.id).subscribe({
+        next: (hydrated) => {
+          this.selectedRequest = hydrated;
+          this.configureApprovalChecklistValidators();
+        },
+      });
+    }
+
     this.configureApprovalChecklistValidators();
 
     this.isApproveModalOpen = true;
