@@ -190,6 +190,19 @@
                     View
                   </button>
 
+                  @if (
+                    txn.status === "PENDING_SIGNATURE" &&
+                    isStaff &&
+                    !txn.employeeSignature
+                  ) {
+                    <button
+                      class="action-btn sign-btn"
+                      (click)="openSignModal(txn, $event)"
+                    >
+                      Sign
+                    </button>
+                  }
+
                   @if (txn.status === "PENDING_SIGNATURE" && canManage) {
                     <button
                       class="action-btn sign-btn"
