@@ -23,6 +23,7 @@ import { Equipment } from '../../models/equipment.model';
 import { User } from '../../models/auth.model';
 import { IctChecklist, ReturnCondition } from '../../models/transaction.model';
 import { SignaturePadComponent } from '../../shared/signature-pad/signature-pad.component';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-request-list',
@@ -178,6 +179,7 @@ export class RequestListComponent implements OnInit {
           next: (payload) => {
             const items = payload.content || [];
             this.requests.set(items);
+            this.hydrateMissingPreferredEquipmentTypes(items);
             this.resolvePageInfo(payload, items);
             this.isLoading = false;
           },
@@ -209,6 +211,7 @@ export class RequestListComponent implements OnInit {
         next: (payload) => {
           const items = payload.content || [];
           this.requests.set(items);
+          this.hydrateMissingPreferredEquipmentTypes(items);
           this.resolvePageInfo(payload, items);
           this.isLoading = false;
         },
@@ -241,8 +244,9 @@ export class RequestListComponent implements OnInit {
       return [];
     }
 
-    const preferredType =
-      this.selectedRequest.preferredEquipmentType?.trim().toUpperCase() || '';
+    const preferredType = this.normalizeEquipmentType(
+      this.selectedRequest.preferredEquipmentType,
+    );
     if (!preferredType) {
       return this.availableEquipment;
     }
@@ -254,9 +258,9 @@ export class RequestListComponent implements OnInit {
   }
 
   get requiresChecklist(): boolean {
-    const type = this.selectedRequest?.preferredEquipmentType
-      ?.trim()
-      .toUpperCase();
+    const type = this.normalizeEquipmentType(
+      this.selectedRequest?.preferredEquipmentType,
+    );
     return !!type && (type === 'LAPTOP' || type === 'DESKTOP');
   }
 
@@ -316,8 +320,9 @@ export class RequestListComponent implements OnInit {
 
   openApproveModal(reqItem: EquipmentRequest, event?: Event): void {
     event?.stopPropagation();
-    this.selectedRequest = reqItem;
     this.returnAssetOptions = [];
+
+    this.selectedRequest = reqItem;
 
     this.approveForm.patchValue({
       issueAssetNumber:
@@ -535,7 +540,7 @@ export class RequestListComponent implements OnInit {
     const employeeSignature =
       this.requestSignatureBase64 ?? val.employeeSignature ?? null;
 
-    if (this.isStaff && !val.employeeSignature) {
+    if (this.isStaff && !employeeSignature) {
       this.toastService.warning(
         'Signature Required',
         'Please sign the request before submitting it.',
@@ -561,21 +566,21 @@ export class RequestListComponent implements OnInit {
         employeeSignature: employeeSignature ?? undefined,
       })
       .subscribe({
-      next: (res) => {
-        this.isLoading = false;
-        this.closeModals();
-        this.toastService.success(
-          'Request Submitted',
-          `Application ${res.requestCode} submitted successfully!`,
-        );
-        this.loadRequests();
-      },
-      error: (err) => {
-        this.isLoading = false;
-        const msg = this.authService.getErrorMessage(err);
-        this.toastService.error('Error Submitting Request', msg);
-      },
-    });
+        next: (res) => {
+          this.isLoading = false;
+          this.closeModals();
+          this.toastService.success(
+            'Request Submitted',
+            `Application ${res.requestCode} submitted successfully!`,
+          );
+          this.loadRequests();
+        },
+        error: (err) => {
+          this.isLoading = false;
+          const msg = this.authService.getErrorMessage(err);
+          this.toastService.error('Error Submitting Request', msg);
+        },
+      });
   }
 
   approveRequest(): void {
