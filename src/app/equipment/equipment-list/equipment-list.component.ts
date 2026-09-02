@@ -360,6 +360,8 @@ export class EquipmentListComponent implements OnInit {
         return 'status-indicator active';
       case 'MAINTENANCE':
         return 'status-indicator danger';
+      case 'DISPOSED':
+        return 'status-indicator';
       default:
         return 'status-indicator';
     }
