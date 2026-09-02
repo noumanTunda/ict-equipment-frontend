@@ -260,6 +260,20 @@ export class RequestListComponent implements OnInit {
     return !!type && (type === 'LAPTOP' || type === 'DESKTOP');
   }
 
+  get selectedRequestPreferredEquipmentType(): string {
+    const preferredType = this.normalizeEquipmentType(
+      this.selectedRequest?.preferredEquipmentType,
+    );
+    return preferredType || 'N/A';
+  }
+
+  getPreferredEquipmentType(request: EquipmentRequest): string {
+    const preferredType = this.normalizeEquipmentType(
+      request.preferredEquipmentType,
+    );
+    return preferredType || 'N/A';
+  }
+
   get selectedRequestHasSignature(): boolean {
     return !!this.selectedRequest?.employeeSignature;
   }
