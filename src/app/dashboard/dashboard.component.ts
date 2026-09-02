@@ -229,6 +229,15 @@ export class DashboardComponent implements OnInit {
         const issuedEquipment = equipment.filter(
           (item) => item.status === 'ISSUED',
         );
+        const maintenanceEquipment = equipment.filter(
+          (item) => item.status === 'MAINTENANCE',
+        );
+        const returnedEquipment = equipment.filter(
+          (item) => item.status === 'RETURNED',
+        );
+        const disposedEquipment = equipment.filter(
+          (item) => item.status === 'DISPOSED',
+        );
         const requestResolutionCount =
           (approvedRequests.pageable?.totalElements ?? 0) +
           (rejectedRequests.pageable?.totalElements ?? 0) +
