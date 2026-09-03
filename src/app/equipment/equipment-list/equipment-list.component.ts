@@ -138,7 +138,7 @@ export class EquipmentListComponent implements OnInit {
         this.selectedStatus(),
         this.selectedType(),
         this.searchTerm(),
-)
+      )
       .subscribe({
         next: (
           response:

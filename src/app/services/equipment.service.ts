@@ -38,12 +38,25 @@ export class EquipmentService {
     page: number = 0,
     size: number = 10,
     sort: string = 'id,desc',
+    status?: string,
+    type?: string,
+    search?: string,
   ): Observable<PaginatedPayload<Equipment>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
     if (sort) {
       params = params.set('sort', sort);
+    }
+
+    if (status) {
+      params = params.set('status', status);
+    }
+    if (type) {
+      params = params.set('type', type);
+    }
+    if (search) {
+      params = params.set('search', search);
     }
 
     return this.http
