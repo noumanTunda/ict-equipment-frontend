@@ -131,7 +131,14 @@ export class EquipmentListComponent implements OnInit {
     const pageIndex = this.page() - 1;
 
     this.equipmentService
-      .getEquipmentPaginated(pageIndex, this.pageSize(), 'id,desc')
+      .getEquipmentPaginated(
+        pageIndex,
+        this.pageSize(),
+        'id,desc',
+        this.selectedStatus(),
+        this.selectedType(),
+        this.searchTerm(),
+)
       .subscribe({
         next: (
           response:
@@ -192,6 +199,8 @@ export class EquipmentListComponent implements OnInit {
 
   onSearchChange(term: string): void {
     this.searchTerm.set(term);
+    this.page.set(1);
+    this.loadEquipment();
   }
 
   onPageSizeChange(size: number): void {
@@ -202,10 +211,14 @@ export class EquipmentListComponent implements OnInit {
 
   onStatusChange(status: string): void {
     this.selectedStatus.set(this.normalizeStatus(status));
+    this.page.set(1);
+    this.loadEquipment();
   }
 
   onTypeChange(type: string): void {
     this.selectedType.set(type);
+    this.page.set(1);
+    this.loadEquipment();
   }
 
   goToPage(p: number): void {
