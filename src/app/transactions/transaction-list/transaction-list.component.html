@@ -128,7 +128,7 @@
               </td>
             </tr>
           } @else {
-            @for (txn of filteredTransactions(); track txn.id) {
+            @for (txn of transactions(); track txn.id) {
               <tr>
                 <td class="id-cell">#{{ txn.transactionCode }}</td>
                 <td class="font-medium">

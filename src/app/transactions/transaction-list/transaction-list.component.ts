@@ -225,13 +225,23 @@ export class TransactionListComponent implements OnInit {
     this.transactionService.getTransactions(filters).subscribe({
       next: (payload) => {
         const items = payload.content || [];
+        const pageable = payload.pageable;
+
+        const totalElements = pageable?.totalElements ?? items.length;
+        const pageSize = pageable?.pageSize ?? this.pageSize();
+        const currentNumber =
+          pageable?.pageNumber ?? Math.max(0, this.page() - 1);
+        const totalPages =
+          pageable?.totalPages ??
+          (pageSize > 0
+            ? Math.max(1, Math.ceil(Number(totalElements) / pageSize))
+            : 1);
+
         this.transactions.set(items);
-        const totalElements = payload.pageable?.totalElements ?? items.length;
-        const pageSize = payload.pageable?.pageSize ?? this.pageSize();
-        const derivedTotalPages =
-          pageSize > 0 ? Math.max(1, Math.ceil(totalElements / pageSize)) : 1;
-        this.totalElements.set(totalElements);
-        this.totalPages.set(payload.pageable?.totalPages ?? derivedTotalPages);
+        this.totalElements.set(Number(totalElements));
+        this.totalPages.set(Number(Math.max(1, totalPages)));
+        // Sync UI page (client is 1-based, backend is 0-based)
+        this.page.set(Number(currentNumber) + 1);
         this.isLoading = false;
       },
       error: (err) => {
@@ -258,6 +268,28 @@ export class TransactionListComponent implements OnInit {
 
   onSearchChange(term: string): void {
     this.searchTerm.set(term);
+    this.page.set(1);
+    this.loadTransactions();
+  }
+
+  onStatusChange(status: string): void {
+    this.selectedStatus.set(status);
+    this.page.set(1);
+    this.loadTransactions();
+  }
+
+  onStartDateChange(date: string): void {
+    const normalized = date && date.length === 10 ? `${date}T00:00:00` : date;
+    this.startDateFilter.set(normalized);
+    this.page.set(1);
+    this.loadTransactions();
+  }
+
+  onEndDateChange(date: string): void {
+    const normalized = date && date.length === 10 ? `${date}T23:59:59` : date;
+    this.endDateFilter.set(normalized);
+    this.page.set(1);
+    this.loadTransactions();
   }
 
   onPageSizeChange(size: number): void {
