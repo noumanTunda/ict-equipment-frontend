@@ -72,6 +72,7 @@
             <th>Asset No.</th>
             <th>Serial No.</th>
             <th>Equipment &amp; Model</th>
+            <th>Department</th>
             <th>Supplier</th>
             <th>Status</th>
             <th>Actions</th>
@@ -99,6 +100,7 @@
                   <div>{{ item.brandModel }}</div>
                   <div class="text-[11px] text-slate-400">{{ item.equipmentType }}</div>
                 </td>
+                <td>{{ item.department }}</td>
                 <td>{{ item.supplierDetails }}</td>
                 <td>
                   <span [ngClass]="getStatusClass(item.status)">
@@ -232,14 +234,24 @@
             </div>
           </div>
 
-          <div>
-            <label class="form-label text-xs font-bold text-slate-700">Brand &amp; Model *</label>
-            <input
-              type="text"
-              formControlName="brandModel"
-              placeholder="HP ProBook 6470"
-              class="form-control text-xs px-3 py-2 rounded border-slate-300 focus:border-[#1394db]"
-            />
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700">Brand &amp; Model *</label>
+              <input
+                type="text"
+                formControlName="brandModel"
+                placeholder="HP ProBook 6470"
+                class="form-control text-xs px-3 py-2 rounded border-slate-300 focus:border-[#1394db]"
+              />
+            </div>
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700">Department *</label>
+              <select formControlName="department" class="form-select text-xs px-3 py-2 rounded border-slate-300 focus:border-[#1394db]">
+                @for (dept of equipmentDepartment; track dept) {
+                  <option [value]="dept">{{ dept }}</option>
+                }
+              </select>
+            </div>
           </div>
 
           <div>
@@ -313,6 +325,11 @@
           <div>
             <span class="text-slate-400 block font-medium">Brand &amp; Model</span>
             <span class="font-bold text-slate-900">{{ selectedEquipment.brandModel }} ({{ selectedEquipment.equipmentType }})</span>
+          </div>
+
+          <div>
+            <span class="text-slate-400 block font-medium">Department</span>
+            <span class="font-bold text-slate-900">{{ selectedEquipment.department }} ({{ selectedEquipment.department }})</span>
           </div>
 
           <div>
