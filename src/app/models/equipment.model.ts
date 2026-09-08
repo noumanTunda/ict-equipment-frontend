@@ -7,11 +7,19 @@ export type EquipmentStatus =
   | 'MAINTENANCE'
   | 'DISPOSED';
 
+  export type EquipmentDepartment =
+    | 'ICT'
+    | 'FINANCE_AND_ACCOUNTS'
+    | 'LEGAL_SERVICES'
+    | 'HUMAN_RESOURCE_AND_ADMINISTRATION'
+    | 'PLANNING_AND_COORDINATION';
+
 export interface Equipment {
   id: number;
   assetNumber: string;
   serialNumber: string;
   equipmentType: string;
+  department: EquipmentDepartment;
   brandModel: string;
   supplierDetails: string;
   description: string;
@@ -24,6 +32,7 @@ export interface CreateEquipmentDto {
   assetNumber: string;
   serialNumber: string;
   equipmentType: string;
+  department: EquipmentDepartment;
   brandModel: string;
   supplierDetails: string;
   description: string;
@@ -34,6 +43,7 @@ export interface UpdateEquipmentDto {
   assetNumber: string;
   serialNumber: string;
   equipmentType: string;
+  department: EquipmentDepartment;
   brandModel: string;
   supplierDetails: string;
   description: string;
