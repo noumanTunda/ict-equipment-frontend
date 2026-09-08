@@ -1,3 +1,4 @@
+import { EquipmentDepartment } from './../../models/equipment.model';
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -74,6 +75,14 @@ export class EquipmentListComponent implements OnInit {
     'OTHER',
   ];
 
+  equipmentDepartment: string[] = [
+    'ICT',
+    'FINANCE_AND_ACCOUNTS',
+    'LEGAL_SERVICES',
+    'HUMAN_RESOURCE_AND_ADMINISTRATION',
+    'PLANNING_AND_COORDINATION',
+  ];
+
   statusOptions: EquipmentStatus[] = [
     'AVAILABLE',
     'ISSUED',
@@ -121,6 +130,7 @@ export class EquipmentListComponent implements OnInit {
       supplierDetails: ['', [Validators.required]],
       description: ['', [Validators.required]],
       status: ['AVAILABLE' as EquipmentStatus, [Validators.required]],
+      department: ['ICT' as EquipmentDepartment, [Validators.required]],
     });
   }
 
@@ -248,6 +258,7 @@ export class EquipmentListComponent implements OnInit {
       brandModel: item.brandModel,
       supplierDetails: item.supplierDetails,
       description: item.description,
+      department: item.department,
       status: item.status,
     });
 
