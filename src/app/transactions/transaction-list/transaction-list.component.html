@@ -483,14 +483,14 @@
         >
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="form-label text-xs font-bold text-slate-700"
-                >Staff ID *</label
-              >
-              <input
-                type="number"
-                formControlName="staffId"
-                class="form-control text-xs px-3 py-2 rounded border-slate-300"
-              />
+              <app-searchable-select
+                [options]="staffUserOptions"
+                label="Select Staff User"
+                placeholder="Search by name, employee ID or email..."
+                [required]="true"
+                [selectedValue]="directIssueForm.get('staffId')?.value"
+                (selectedValueChange)="directIssueForm.get('staffId')?.setValue($event)"
+              ></app-searchable-select>
             </div>
             <div>
               <label class="form-label text-xs font-bold text-slate-700"
