@@ -4,6 +4,8 @@ import { IctChecklist, ReturnCondition } from './transaction.model';
 
 export type RequestType = 'ISSUE' | 'RETURN' | 'EXCHANGE';
 export type RequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED';
+export type EquipmentType = 'LAPTOP'| 'DESKTOP'| 'PRINTER'| 'UPS'| 'SCANNER'| 'MONITOR'| 'OTHER';
+
 
 export interface EquipmentRequest {
   id: number;
@@ -15,7 +17,7 @@ export interface EquipmentRequest {
   reason: string;
   returnAssetNumber: string | null;
   issueAssetNumber: string | null;
-  preferredEquipmentType: string | null;
+  preferredEquipmentType: EquipmentType;
   status: RequestStatus;
   rejectionReason: string | null;
   approvedBy: number | null;
@@ -31,7 +33,7 @@ export interface CreateEquipmentRequestDto {
   reason: string;
   returnAssetNumber?: string;
   issueAssetNumber?: string;
-  preferredEquipmentType?: string;
+  preferredEquipmentType: EquipmentType;
   employeeSignature?: string;
 }
 
