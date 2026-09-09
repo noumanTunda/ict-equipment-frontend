@@ -326,6 +326,26 @@ export class TransactionListComponent implements OnInit {
   }
 
   openDirectIssueModal(): void {
+    this.directIssueStaffSearch.set('');
+    this.directIssueEquipmentSearch.set('');
+    this.directIssueAccessoryInput = '';
+    this.directIssueAccessories = [];
+    this.directIssueForm.reset({
+      staffId: null,
+      issuingOfficerId: this.currentUser?.id || 2,
+      assetNumber: '',
+      accessoriesProvided: '',
+      checklist: {
+        osInstalled: 'Windows 11 Pro',
+        appSystemInstalled: 'Office 365, Enterprise Antivirus',
+        antiVirusInstalled: 'Kaspersky Endpoint Security',
+        pdfReaderInstalled: 'Adobe Acrobat Reader',
+        isJoinedToDomain: true,
+        isInstalledVpn: true,
+        isInstalledPrinter: true,
+        additionalNotes: 'Provisioned directly via ICT Service Desk',
+      },
+    });
     this.applyDirectIssueChecklistValidators();
     this.isDirectIssueModalOpen = true;
   }
