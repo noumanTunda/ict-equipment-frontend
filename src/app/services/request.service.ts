@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, catchError, map } from 'rxjs';
 import { ApiResponse } from '../models/auth.model';
 import { PaginatedPayload } from '../models/equipment.model';
 import {
@@ -94,7 +94,27 @@ export class RequestService {
       .pipe(map((res) => res.payload));
   }
 
-  approveRequest(data: ApproveRequestDto): Observable<EquipmentRequest> {
+  approveRequest(
+    data: ApproveRequestDto,
+    officerId?: number,
+  ): Observable<EquipmentRequest> {
+    if (officerId) {
+      return this.http
+        .post<
+          ApiResponse<EquipmentRequest>
+        >(`${this.baseUrl}/approve/${officerId}`, data)
+        .pipe(
+          map((res) => res.payload),
+          catchError(() =>
+            this.http
+              .post<
+                ApiResponse<EquipmentRequest>
+              >(`${this.baseUrl}/approve`, data)
+              .pipe(map((res) => res.payload)),
+          ),
+        );
+    }
+
     return this.http
       .post<ApiResponse<EquipmentRequest>>(`${this.baseUrl}/approve`, data)
       .pipe(map((res) => res.payload));
