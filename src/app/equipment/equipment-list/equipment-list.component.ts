@@ -429,6 +429,38 @@ export class EquipmentListComponent implements OnInit {
     }
   }
 
+  private buildActiveIssuedEquipmentMap(
+    transactions: EquipmentTransaction[],
+  ): Map<string, Equipment> {
+    const issuedMap = new Map<string, Equipment>();
+
+    for (const transaction of transactions) {
+      for (const returnedItem of transaction.returnedItems || []) {
+        issuedMap.delete(returnedItem.assetNumber);
+      }
+
+      for (const issuedItem of transaction.issuedItems || []) {
+        issuedMap.set(issuedItem.assetNumber, {
+          id: 0,
+          assetNumber: issuedItem.assetNumber,
+          serialNumber: issuedItem.serialNumber || 'N/A',
+          equipmentType: issuedItem.equipmentType || 'N/A',
+          department:
+            (this.currentUser?.department as EquipmentDepartment) || 'N/A',
+          brandModel: issuedItem.equipmentType || 'N/A',
+          supplierDetails: 'Issued to You' ,
+          description:
+            issuedItem.accessoriesProvided || 'Issued through transaction',
+          status: 'ISSUED',
+          createdAt: transaction.createdAt,
+          updatedAt: transaction.updatedAt,
+        });
+      }
+    }
+
+    return issuedMap;
+  }
+
   private normalizeStatus(status: string): string {
     return (
       status?.trim().toUpperCase().replace('MAINTENACE', 'MAINTENANCE') || 'ALL'
