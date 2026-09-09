@@ -9,6 +9,7 @@ import {
   BehaviorSubject,
   catchError,
   filter,
+  finalize,
   switchMap,
   take,
   throwError,
@@ -16,18 +17,25 @@ import {
 import { AuthService } from '../services/auth.service';
 
 let isRefreshing = false;
-const refreshTokenSubject = new BehaviorSubject<string | null>(null);
+const refreshTokenSubject = new BehaviorSubject<string | false | null>(null);
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = authService.getToken();
+  const isApiRequest = req.url.includes('localhost:8080/api/v1');
+  const isAuthRequest = req.url.includes('/auth/');
+
+  if (
+    isApiRequest &&
+    !isAuthRequest &&
+    token &&
+    authService.isTokenExpired(token)
+  ) {
+    return handleExpiredToken(req, next, authService);
+  }
 
   let authReq = req;
-  if (
-    token &&
-    req.url.includes('localhost:8080/api/v1') &&
-    !req.url.includes('/auth/')
-  ) {
+  if (token && isApiRequest && !isAuthRequest) {
     authReq = addTokenHeader(req, token);
   }
 
@@ -75,15 +83,32 @@ function handleExpiredToken(
       }),
       catchError((refreshErr) => {
         isRefreshing = false;
+        refreshTokenSubject.next(false);
         authService.logout();
         return throwError(() => refreshErr);
+      }),
+      finalize(() => {
+        if (isRefreshing && refreshTokenSubject.value === null) {
+          isRefreshing = false;
+        }
       }),
     );
   } else {
     return refreshTokenSubject.pipe(
       filter((token) => token !== null),
       take(1),
-      switchMap((token) => next(addTokenHeader(request, token!))),
+      switchMap((token) => {
+        if (token === false) {
+          authService.logout();
+          return throwError(() => new Error('Token refresh failed'));
+        }
+
+        if (typeof token === 'string') {
+          return next(addTokenHeader(request, token));
+        }
+
+        return throwError(() => new Error('Invalid token state'));
+      }),
     );
   }
 }
