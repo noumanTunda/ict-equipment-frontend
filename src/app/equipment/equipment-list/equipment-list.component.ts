@@ -1,4 +1,4 @@
-import { EquipmentDepartment } from './../../models/equipment.model';
+import { EquipmentDepartment } from '../../models/equipment.model';
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
