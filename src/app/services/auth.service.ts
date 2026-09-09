@@ -19,9 +19,9 @@ import {
 })
 export class AuthService {
   private readonly authApiUrl = 'http://localhost:8080/api/v1/auth';
-  private readonly accessTokenKey = 'ppra_access_token';
-  private readonly refreshTokenKey = 'ppra_refresh_token';
-  private readonly userKey = 'ppra_current_user';
+  private readonly accessTokenKey = 'access_token';
+  private readonly refreshTokenKey = 'refresh_token';
+  private readonly userKey = 'current_user';
 
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
