@@ -493,19 +493,14 @@
               ></app-searchable-select>
             </div>
             <div>
-              <label class="form-label text-xs font-bold text-slate-700"
-                >Select AVAILABLE Equipment *</label
-              >
-              <select
-                formControlName="assetNumber"
-                class="form-select text-xs px-3 py-2 rounded border-slate-300"
-              >
-                @for (eq of availableEquipment; track eq.id) {
-                  <option [value]="eq.assetNumber">
-                    {{ eq.assetNumber }} - {{ eq.brandModel }}
-                  </option>
-                }
-              </select>
+              <app-searchable-select
+                [options]="equipmentOptions"
+                label="Select Available Equipment"
+                placeholder="Search by asset number, model or type..."
+                [required]="true"
+                [selectedValue]="directIssueForm.get('assetNumber')?.value"
+                (selectedValueChange)="directIssueForm.get('assetNumber')?.setValue($event)"
+              ></app-searchable-select>
             </div>
           </div>
 
