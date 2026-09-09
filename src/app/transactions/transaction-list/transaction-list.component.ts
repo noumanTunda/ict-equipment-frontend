@@ -215,6 +215,23 @@ export class TransactionListComponent implements OnInit {
       });
   }
 
+  loadStaffUsers(): void {
+    if (!this.canManage) {
+      return;
+    }
+
+    this.userDirectoryService.getAllUsers().subscribe({
+      next: (users) => {
+        this.staffUsers = users.filter((user) =>
+          (user.role || '').toUpperCase().includes('STAFF'),
+        );
+      },
+      error: () => {
+        this.staffUsers = [];
+      },
+    });
+  }
+
   loadAvailableEquipment(): void {
     if (this.canManage) {
       this.equipmentService.getAllEquipment().subscribe({
