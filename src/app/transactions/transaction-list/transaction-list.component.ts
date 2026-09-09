@@ -563,4 +563,43 @@ export class TransactionListComponent implements OnInit {
         return 'status-indicator';
     }
   }
+
+  private syncAccessoriesToForm(): void {
+    this.directIssueForm
+      .get('accessoriesProvided')
+      ?.setValue(this.directIssueAccessories.join(', '));
+  }
+
+  private hydrateStaffUsersFromTransactions(
+    transactions: EquipmentTransaction[],
+  ): void {
+    if (!this.canManage) {
+      return;
+    }
+
+    const knownIds = new Set(this.staffUsers.map((user) => user.id));
+    const derivedUsers: User[] = [];
+
+    for (const transaction of transactions) {
+      if (knownIds.has(transaction.staffId)) {
+        continue;
+      }
+
+      knownIds.add(transaction.staffId);
+      derivedUsers.push({
+        id: transaction.staffId,
+        employeeId: `STAFF-${transaction.staffId}`,
+        fullName: transaction.staffName,
+        email: '',
+        department: '',
+        role: 'ROLE_STAFF',
+        mobileNo: '',
+        status: 'ACTIVE',
+      });
+    }
+
+    if (derivedUsers.length) {
+      this.staffUsers = [...this.staffUsers, ...derivedUsers];
+    }
+  }
 }
