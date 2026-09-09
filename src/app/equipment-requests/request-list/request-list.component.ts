@@ -168,6 +168,28 @@ export class RequestListComponent implements OnInit {
     }
   }
 
+  loadStaffUsers(): void {
+    if (!this.canApprove) {
+      return;
+    }
+
+    this.userDirectoryService.getAllUsers().subscribe({
+      next: (users) => {
+        this.staffUsers = users.filter((user) =>
+          (user.role || '').toUpperCase().includes('STAFF'),
+        );
+        // If an approval modal is already open while users finish loading,
+        // refresh the default asset selection against the request filters.
+        if (this.isApproveModalOpen && this.selectedRequest) {
+          this.afterApprovalRequestDetailLoaded();
+        }
+      },
+      error: () => {
+        this.staffUsers = [];
+      },
+    });
+  }
+
   loadRequests(): void {
     this.isLoading = true;
     const pageIndex = this.page() - 1;
