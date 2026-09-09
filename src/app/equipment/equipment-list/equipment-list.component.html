@@ -5,7 +5,13 @@
     <div class="table-header">
       <div class="table-title">
         <h2>Equipment Inventory Registry</h2>
-        <p>Manage registered hardware units, serial numbers, and equipment status.</p>
+        <p>
+          {{
+            canManage
+              ? "Manage registered hardware units, serial numbers, and equipment status."
+              : "View equipment currently issued to your account."
+          }}
+        </p>
       </div>
 
       <div class="flex items-center gap-3">
