@@ -92,7 +92,7 @@
           <tr>
             <th>Request Code</th>
             <th>Applicant</th>
-            <th>Type &amp; Equipment</th>
+            <th>Request Type &amp; Equipment Type</th>
             <th>Reason</th>
             <th>Status</th>
             <th>Actions</th>
@@ -148,11 +148,7 @@
                       Return: {{ reqItem.returnAssetNumber || "N/A" }}
                     } @else {
                       Return: {{ reqItem.returnAssetNumber }} &rarr; Issue:
-                      {{
-                        reqItem.preferredEquipmentType ||
-                          reqItem.issueAssetNumber ||
-                          "Any"
-                      }}
+                      {{ getPreferredEquipmentType(reqItem) }}
                     }
                     @if (reqItem.employeeSignature) {
                       <div
@@ -206,7 +202,7 @@
                     >
                       Sign
                     </button>
-                    
+
                   } -->
                 </td>
               </tr>
@@ -275,7 +271,7 @@
       class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto"
     >
       <div
-        class="bg-white rounded-lg shadow-2xl max-w-lg w-full p-6 sm:p-8 space-y-6 relative border border-slate-100 my-8"
+        class="bg-white rounded-lg shadow-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 relative border border-slate-100 my-8"
       >
         <div
           class="flex items-center justify-between border-b border-slate-100 pb-4"
@@ -412,7 +408,7 @@
       class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto"
     >
       <div
-        class="bg-white rounded-lg shadow-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 relative border border-slate-100 my-8 max-h-[90vh] overflow-y-auto"
+        class="bg-white rounded-lg shadow-2xl max-w-4xl w-full p-6 sm:p-8 space-y-6 relative border border-slate-100 my-8 max-h-[90vh] overflow-y-auto"
       >
         <div
           class="flex items-center justify-between border-b border-slate-100 pb-4"
@@ -479,32 +475,14 @@
               selectedRequest.requestType === "EXCHANGE"
             ) {
               <div>
-                <label class="form-label text-xs font-bold text-slate-700"
-                  >Return Equipment Asset *</label
-                >
-                <select
-                  formControlName="returnAssetNumber"
-                  class="form-select text-xs px-3 py-2 rounded border-slate-300"
-                >
-                  <option value="">
-                    -- Select active asset issued to this staff member --
-                  </option>
-                  @if (isLoadingReturnAssets) {
-                    <option value="">Loading active assets...</option>
-                  } @else {
-                    @for (eq of returnAssetOptions; track eq.id) {
-                      <option [value]="eq.assetNumber">
-                        {{ eq.assetNumber }} - {{ eq.brandModel }} ({{
-                          eq.equipmentType
-                        }})
-                      </option>
-                    } @empty {
-                      <option value="">
-                        -- No active issued equipment found --
-                      </option>
-                    }
-                  }
-                </select>
+                <app-searchable-select
+                  [options]="approvalReturnAssetOptions"
+                  label="Return Equipment Asset"
+                  placeholder="Search issued asset by number, model or type..."
+                  [required]="true"
+                  [selectedValue]="approveForm.get('returnAssetNumber')?.value"
+                  (selectedValueChange)="approveForm.get('returnAssetNumber')?.setValue($event)"
+                ></app-searchable-select>
               </div>
             }
           </div>
@@ -656,7 +634,7 @@
       class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4"
     >
       <div
-        class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-100"
+        class="bg-white rounded-lg shadow-2xl max-w-lg w-full p-6 space-y-4 border border-slate-100"
       >
         <div
           class="flex items-center justify-between border-b border-slate-100 pb-3"
@@ -723,7 +701,7 @@
       class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4"
     >
       <div
-        class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-100"
+        class="bg-white rounded-lg shadow-2xl max-w-lg w-full p-6 space-y-4 border border-slate-100"
       >
         <div
           class="flex items-center justify-between border-b border-slate-100 pb-3"
