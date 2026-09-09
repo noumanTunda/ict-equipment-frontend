@@ -8,12 +8,13 @@ import {
   Validators,
 } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { EquipmentService } from '../../services/equipment.service';
+import { TransactionService } from '../../services/transaction.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import { Equipment, EquipmentStatus } from '../../models/equipment.model';
 import { User } from '../../models/auth.model';
+import { EquipmentTransaction } from '../../models/transaction.model';
 
 export interface ApiResponse<T> {
   status: number;
