@@ -153,6 +153,62 @@ export class TransactionListComponent implements OnInit {
     return type === 'LAPTOP' || type === 'DESKTOP';
   }
 
+  get filteredStaffUsers(): User[] {
+    const term = this.directIssueStaffSearch().toLowerCase().trim();
+    if (!term) {
+      return this.staffUsers;
+    }
+
+    return this.staffUsers.filter((user) =>
+      `${user.fullName} ${user.employeeId} ${user.email}`
+        .toLowerCase()
+        .includes(term),
+    );
+  }
+
+  get filteredAvailableEquipment(): Equipment[] {
+    const term = this.directIssueEquipmentSearch().toLowerCase().trim();
+    if (!term) {
+      return this.availableEquipment;
+    }
+
+    return this.availableEquipment.filter((equipment) =>
+      `${equipment.assetNumber} ${equipment.brandModel} ${equipment.equipmentType}`
+        .toLowerCase()
+        .includes(term),
+    );
+  }
+
+  get staffUserOptions() {
+    return this.staffUsers.map(user => ({
+      value: user.id,
+      label: `${user.fullName} (${user.employeeId}) - ${user.department || 'N/A'}`
+    }));
+  }
+
+  get equipmentOptions() {
+    const selectedStaff = this.directIssueSelectedStaff;
+
+    // Staff must be selected first; no department context exists yet.
+    if (!selectedStaff) {
+      return [];
+    }
+
+    let equipmentList = this.availableEquipment;
+
+    // Show only equipment belonging to the selected user's department.
+    if (selectedStaff.department) {
+      equipmentList = equipmentList.filter(
+        (eq) => eq.department === selectedStaff.department,
+      );
+    }
+
+    return equipmentList.map(eq => ({
+      value: eq.assetNumber,
+      label: `${eq.assetNumber} - ${eq.brandModel} (${eq.equipmentType}) - ${eq.department}`
+    }));
+  }
+
   initDirectIssueForm(): void {
     this.directIssueForm = this.fb.group({
       staffId: [1, [Validators.required]],
