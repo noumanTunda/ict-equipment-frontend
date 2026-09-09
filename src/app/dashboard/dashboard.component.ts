@@ -1,7 +1,8 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 import { RequestService } from '../services/request.service';
 import { EquipmentService } from '../services/equipment.service';
@@ -198,19 +199,25 @@ export class DashboardComponent implements OnInit {
         page: 0,
         size: 5,
         sort: 'id,desc',
-      }),
+      }).pipe(
+        catchError(() => of({ content: [], pageable: { totalElements: 0, totalPages: 0, pageSize: 5, pageNumber: 0 } }))
+      ),
       pendingTransactions: this.transactionService.getTransactions({
         status: 'PENDING_SIGNATURE',
         page: 0,
         size: 1,
         sort: 'id,desc',
-      }),
+      }).pipe(
+        catchError(() => of({ content: [], pageable: { totalElements: 0, totalPages: 0, pageSize: 1, pageNumber: 0 } }))
+      ),
       completedTransactions: this.transactionService.getTransactions({
         status: 'COMPLETED',
         page: 0,
         size: 1,
         sort: 'id,desc',
-      }),
+      }).pipe(
+        catchError(() => of({ content: [], pageable: { totalElements: 0, totalPages: 0, pageSize: 1, pageNumber: 0 } }))
+      ),
     }).subscribe({
       next: ({
         equipment,
