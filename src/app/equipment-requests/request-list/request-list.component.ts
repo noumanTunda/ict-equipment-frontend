@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { RequestService } from '../../services/request.service';
 import { EquipmentService } from '../../services/equipment.service';
 import { TransactionService } from '../../services/transaction.service';
+import { UserDirectoryService } from '../../services/user-directory.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import {
@@ -20,10 +21,12 @@ import {
   RequestType,
 } from '../../models/request.model';
 import { Equipment } from '../../models/equipment.model';
+import { EquipmentType } from '../../models/request.model';
 import { User } from '../../models/auth.model';
 import { IctChecklist, ReturnCondition } from '../../models/transaction.model';
 import { SignaturePadComponent } from '../../shared/signature-pad/signature-pad.component';
-import { forkJoin } from 'rxjs';
+import { SearchableSelectComponent } from '../../shared/searchable-select/searchable-select.component';
+import { catchError, forkJoin, of } from 'rxjs';
 
 @Component({
   selector: 'app-request-list',
@@ -33,6 +36,7 @@ import { forkJoin } from 'rxjs';
     ReactiveFormsModule,
     FormsModule,
     SignaturePadComponent,
+    SearchableSelectComponent,
   ],
   templateUrl: './request-list.component.html',
 })
@@ -40,6 +44,7 @@ export class RequestListComponent implements OnInit {
   private readonly requestService = inject(RequestService);
   private readonly equipmentService = inject(EquipmentService);
   private readonly transactionService = inject(TransactionService);
+  private readonly userDirectoryService = inject(UserDirectoryService);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   private readonly fb = inject(FormBuilder);
@@ -51,6 +56,9 @@ export class RequestListComponent implements OnInit {
   requests = signal<EquipmentRequest[]>([]);
   searchTerm = signal<string>('');
   activeStatusTab = signal<RequestStatus | 'ALL'>('PENDING');
+  submitReturnAssetSearch = signal<string>('');
+  approveIssueAssetSearch = signal<string>('');
+  approveReturnAssetSearch = signal<string>('');
 
   page = signal<number>(1);
   pageSize = signal<number>(10);
@@ -66,6 +74,7 @@ export class RequestListComponent implements OnInit {
   availableEquipment: Equipment[] = [];
   issuedEquipment: Equipment[] = [];
   returnAssetOptions: Equipment[] = [];
+  staffUsers: User[] = [];
 
   // Options
   requestTypes: RequestType[] = ['ISSUE', 'RETURN', 'EXCHANGE'];
@@ -101,6 +110,7 @@ export class RequestListComponent implements OnInit {
 
     this.initForms();
     this.loadEquipmentLists();
+    this.loadStaffUsers();
     this.loadRequests();
   }
 
@@ -267,35 +277,110 @@ export class RequestListComponent implements OnInit {
     }
 
     const preferredType = this.normalizeEquipmentType(
-      this.selectedRequest.preferredEquipmentType,
+      this.selectedRequest.preferredEquipmentType || '',
     );
-    if (!preferredType) {
-      return this.availableEquipment;
+
+    let filtered = this.availableEquipment;
+
+    // Filter by the preferred equipment type first (e.g. UPS only).
+    if (preferredType) {
+      filtered = filtered.filter(
+        (equipment) =>
+          equipment.equipmentType.trim().toUpperCase() === preferredType,
+      );
     }
 
-    return this.availableEquipment.filter(
-      (equipment) =>
-        equipment.equipmentType.trim().toUpperCase() === preferredType,
+    // Then only show equipment from the requesting user's department.
+    const staffDepartment = this.getStaffDepartment(
+      this.selectedRequest.staffId,
     );
+    if (staffDepartment) {
+      filtered = filtered.filter(
+        (equipment) => equipment.department === staffDepartment,
+      );
+    }
+
+    return filtered;
+  }
+
+  get filteredSubmitReturnAssetOptions(): Equipment[] {
+    const term = this.submitReturnAssetSearch().toLowerCase().trim();
+    if (!term) {
+      return this.returnAssetOptions;
+    }
+
+    return this.returnAssetOptions.filter((equipment) =>
+      `${equipment.assetNumber} ${equipment.brandModel} ${equipment.equipmentType}`
+        .toLowerCase()
+        .includes(term),
+    );
+  }
+
+  get filteredApprovalIssueOptions(): Equipment[] {
+    const term = this.approveIssueAssetSearch().toLowerCase().trim();
+    if (!term) {
+      return this.approvalEquipmentOptions;
+    }
+
+    return this.approvalEquipmentOptions.filter((equipment) =>
+      `${equipment.assetNumber} ${equipment.brandModel} ${equipment.equipmentType}`
+        .toLowerCase()
+        .includes(term),
+    );
+  }
+
+  get filteredApprovalReturnOptions(): Equipment[] {
+    const term = this.approveReturnAssetSearch().toLowerCase().trim();
+    if (!term) {
+      return this.returnAssetOptions;
+    }
+
+    return this.returnAssetOptions.filter((equipment) =>
+      `${equipment.assetNumber} ${equipment.brandModel} ${equipment.equipmentType}`
+        .toLowerCase()
+        .includes(term),
+    );
+  }
+
+  get submitReturnAssetOptions() {
+    return this.returnAssetOptions.map(eq => ({
+      value: eq.assetNumber,
+      label: `${eq.assetNumber} - ${eq.brandModel} (${eq.equipmentType})`
+    }));
+  }
+
+  get approvalIssueAssetOptions() {
+    return this.approvalEquipmentOptions.map(eq => ({
+      value: eq.assetNumber,
+      label: `${eq.assetNumber} - ${eq.brandModel} (${eq.equipmentType}) - ${eq.department || 'N/A'}`
+    }));
+  }
+
+  get approvalReturnAssetOptions() {
+    return this.returnAssetOptions.map(eq => ({
+      value: eq.assetNumber,
+      label: `${eq.assetNumber} - ${eq.brandModel} (${eq.equipmentType})`
+    }));
   }
 
   get requiresChecklist(): boolean {
     const type = this.normalizeEquipmentType(
-      this.selectedRequest?.preferredEquipmentType,
+
+      this.selectedRequest?.preferredEquipmentType || '',
     );
     return !!type && (type === 'LAPTOP' || type === 'DESKTOP');
   }
 
   get selectedRequestPreferredEquipmentType(): string {
     const preferredType = this.normalizeEquipmentType(
-      this.selectedRequest?.preferredEquipmentType,
+      this.selectedRequest?.preferredEquipmentType || '',
     );
     return preferredType || 'N/A';
   }
 
   getPreferredEquipmentType(request: EquipmentRequest): string {
     const preferredType = this.normalizeEquipmentType(
-      request.preferredEquipmentType,
+      request.preferredEquipmentType || '',
     );
     return preferredType || 'N/A';
   }
@@ -334,6 +419,7 @@ export class RequestListComponent implements OnInit {
       employeeSignature: null,
     });
     this.requestSignatureBase64 = null;
+    this.submitReturnAssetSearch.set('');
     if (this.isStaff && this.currentUser?.id) {
       this.loadReturnAssetOptions(this.currentUser.id);
     }
@@ -345,12 +431,11 @@ export class RequestListComponent implements OnInit {
     this.returnAssetOptions = [];
 
     this.selectedRequest = reqItem;
+    this.approveIssueAssetSearch.set('');
+    this.approveReturnAssetSearch.set('');
 
     this.approveForm.patchValue({
-      issueAssetNumber:
-        reqItem.issueAssetNumber ||
-        this.availableEquipment[0]?.assetNumber ||
-        '',
+      issueAssetNumber: reqItem.issueAssetNumber || '',
       returnAssetNumber: reqItem.returnAssetNumber || '',
       returnCondition: 'GOOD',
     });
@@ -359,18 +444,53 @@ export class RequestListComponent implements OnInit {
       this.loadReturnAssetOptions(reqItem.staffId);
     }
 
-    if (!this.normalizeEquipmentType(reqItem.preferredEquipmentType)) {
-      this.requestService.getRequestById(reqItem.id).subscribe({
-        next: (hydrated) => {
-          this.selectedRequest = hydrated;
-          this.configureApprovalChecklistValidators();
-        },
-      });
+    this.configureApprovalChecklistValidators();
+    this.isApproveModalOpen = true;
+
+    // Always fetch the full request before showing the asset dropdown. The
+    // list endpoint may omit preferredEquipmentType, so this ensures the
+    // correct type filter is applied during approval.
+    this.requestService.getRequestById(reqItem.id).subscribe({
+      next: (hydrated) => {
+        if (!this.isApproveModalOpen) {
+          return;
+        }
+        this.selectedRequest = hydrated;
+        this.afterApprovalRequestDetailLoaded();
+      },
+      error: () => {
+        if (!this.isApproveModalOpen) {
+          return;
+        }
+        // Keep the row data if the detail endpoint is unavailable.
+        this.afterApprovalRequestDetailLoaded();
+      },
+    });
+  }
+
+  private afterApprovalRequestDetailLoaded(): void {
+    if (!this.selectedRequest) {
+      return;
     }
 
     this.configureApprovalChecklistValidators();
 
-    this.isApproveModalOpen = true;
+    const requestType = this.selectedRequest.requestType;
+    if (requestType !== 'ISSUE' && requestType !== 'EXCHANGE') {
+      return;
+    }
+
+    const options = this.approvalEquipmentOptions;
+    const assetControl = this.approveForm.get('issueAssetNumber');
+    const currentAsset = assetControl?.value;
+
+    if (
+      assetControl &&
+      (!currentAsset ||
+        !options.some((equipment) => equipment.assetNumber === currentAsset))
+    ) {
+      assetControl.setValue(options[0]?.assetNumber || '');
+    }
   }
 
   openRejectModal(reqItem: EquipmentRequest, event?: Event): void {
@@ -392,6 +512,9 @@ export class RequestListComponent implements OnInit {
     this.isRejectModalOpen = false;
     this.isDetailModalOpen = false;
     this.selectedRequest = null;
+    this.submitReturnAssetSearch.set('');
+    this.approveIssueAssetSearch.set('');
+    this.approveReturnAssetSearch.set('');
   }
 
   onRequestSignatureChange(signature: string | null): void {
@@ -494,15 +617,24 @@ export class RequestListComponent implements OnInit {
     );
   }
 
-  private normalizeEquipmentType(type?: string | null): string {
-    return type?.trim().toUpperCase() || '';
+  private normalizeEquipmentType(type: EquipmentType | string): string {
+    if (!type) return '';
+    return String(type).trim();
+  }
+
+  private getStaffDepartment(staffId: number): string {
+    return (
+      this.staffUsers.find((user) => user.id === staffId)?.department || ''
+    );
   }
 
   private hydrateMissingPreferredEquipmentTypes(
     requests: EquipmentRequest[],
   ): void {
+    // The list endpoint may not include preferredEquipmentType, so we need to
+    // fetch the full request details for any requests missing this field
     const missingRequests = requests.filter(
-      (request) => !this.normalizeEquipmentType(request.preferredEquipmentType),
+      (request) => !request.preferredEquipmentType || request.preferredEquipmentType === '' as any,
     );
 
     if (!missingRequests.length) {
@@ -511,13 +643,18 @@ export class RequestListComponent implements OnInit {
 
     forkJoin(
       missingRequests.map((request) =>
-        this.requestService.getRequestById(request.id),
+        this.requestService.getRequestById(request.id).pipe(
+          catchError(() => of(null)),
+        ),
       ),
     ).subscribe({
       next: (hydratedRequests) => {
-        const hydratedById = new Map(
-          hydratedRequests.map((request) => [request.id, request]),
-        );
+        const hydratedById = new Map<number, EquipmentRequest>();
+        hydratedRequests.forEach((request) => {
+          if (request) {
+            hydratedById.set(request.id, request);
+          }
+        });
 
         this.requests.set(
           requests.map((request) => hydratedById.get(request.id) ?? request),
@@ -582,9 +719,7 @@ export class RequestListComponent implements OnInit {
     this.requestService
       .submitRequest({
         ...val,
-        preferredEquipmentType: val.preferredEquipmentType
-          ?.trim()
-          .toUpperCase(),
+        preferredEquipmentType: val.preferredEquipmentType,
         employeeSignature: employeeSignature ?? undefined,
       })
       .subscribe({
@@ -645,7 +780,7 @@ export class RequestListComponent implements OnInit {
     };
 
     this.isLoading = true;
-    this.requestService.approveRequest(dto).subscribe({
+    this.requestService.approveRequest(dto, this.currentUser?.id).subscribe({
       next: (res) => {
         this.isLoading = false;
         this.closeModals();
