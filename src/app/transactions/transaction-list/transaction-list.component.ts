@@ -17,6 +17,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { TransactionService } from '../../services/transaction.service';
 import { EquipmentService } from '../../services/equipment.service';
+import { UserDirectoryService } from '../../services/user-directory.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import {
@@ -28,6 +29,7 @@ import {
 import { Equipment } from '../../models/equipment.model';
 import { User } from '../../models/auth.model';
 import { SignaturePadComponent } from '../../shared/signature-pad/signature-pad.component';
+import { SearchableSelectComponent } from '../../shared/searchable-select/searchable-select.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -38,6 +40,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     ReactiveFormsModule,
     FormsModule,
     SignaturePadComponent,
+    SearchableSelectComponent,
   ],
   templateUrl: './transaction-list.component.html',
 })
@@ -45,6 +48,7 @@ export class TransactionListComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly transactionService = inject(TransactionService);
   private readonly equipmentService = inject(EquipmentService);
+  private readonly userDirectoryService = inject(UserDirectoryService);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   private readonly fb = inject(FormBuilder);
@@ -70,6 +74,7 @@ export class TransactionListComponent implements OnInit {
 
   // Equipment cache
   availableEquipment: Equipment[] = [];
+  staffUsers: User[] = [];
 
   // Modals
   isSignModalOpen = false;
@@ -84,6 +89,10 @@ export class TransactionListComponent implements OnInit {
 
   employeeSignatureBase64: string | null = null;
   officerSignatureBase64: string | null = null;
+  directIssueStaffSearch = signal<string>('');
+  directIssueEquipmentSearch = signal<string>('');
+  directIssueAccessoryInput = '';
+  directIssueAccessories: string[] = [];
 
   directIssueForm!: FormGroup;
 
@@ -94,6 +103,7 @@ export class TransactionListComponent implements OnInit {
     this.initDirectIssueForm();
     this.loadTransactions();
     this.loadAvailableEquipment();
+    this.loadStaffUsers();
   }
 
   get isStaff(): boolean {
@@ -144,6 +154,14 @@ export class TransactionListComponent implements OnInit {
     return this.availableEquipment.find(
       (equipment) => equipment.assetNumber === assetNumber,
     );
+  }
+
+  get directIssueSelectedStaff(): User | undefined {
+    const staffId = this.directIssueForm?.get('staffId')?.value;
+    if (staffId === null || staffId === undefined || staffId === '') {
+      return undefined;
+    }
+    return this.staffUsers.find((user) => user.id === Number(staffId));
   }
 
   get directIssueRequiresChecklist(): boolean {
@@ -211,10 +229,10 @@ export class TransactionListComponent implements OnInit {
 
   initDirectIssueForm(): void {
     this.directIssueForm = this.fb.group({
-      staffId: [1, [Validators.required]],
+      staffId: [null as number | null, [Validators.required]],
       issuingOfficerId: [this.currentUser?.id || 2, [Validators.required]],
       assetNumber: ['', [Validators.required]],
-      accessoriesProvided: ['Charger, Carrying Case, Wireless Mouse'],
+      accessoriesProvided: [''],
       checklist: this.fb.group({
         osInstalled: ['Windows 11 Pro', [Validators.required]],
         appSystemInstalled: [
@@ -341,6 +359,7 @@ export class TransactionListComponent implements OnInit {
             : 1);
 
         this.transactions.set(items);
+        this.hydrateStaffUsersFromTransactions(items);
         this.totalElements.set(Number(totalElements));
         this.totalPages.set(Number(Math.max(1, totalPages)));
         // Sync UI page (client is 1-based, backend is 0-based)
@@ -365,7 +384,19 @@ export class TransactionListComponent implements OnInit {
       (t) =>
         t.transactionCode.toLowerCase().includes(term) ||
         t.staffName.toLowerCase().includes(term) ||
-        t.issuingOfficerName.toLowerCase().includes(term),
+        t.issuingOfficerName.toLowerCase().includes(term) ||
+        t.issuedItems.some(
+          (item) =>
+            item.assetNumber.toLowerCase().includes(term) ||
+            (item.serialNumber && item.serialNumber.toLowerCase().includes(term)) ||
+            (item.equipmentType && item.equipmentType.toLowerCase().includes(term)),
+        ) ||
+        t.returnedItems.some(
+          (item) =>
+            item.assetNumber.toLowerCase().includes(term) ||
+            (item.serialNumber && item.serialNumber.toLowerCase().includes(term)) ||
+            (item.equipmentType && item.equipmentType.toLowerCase().includes(term)),
+        ),
     );
   });
 
@@ -459,6 +490,49 @@ export class TransactionListComponent implements OnInit {
     this.isDetailModalOpen = false;
     this.isDirectIssueModalOpen = false;
     this.selectedTransaction = null;
+    this.directIssueStaffSearch.set('');
+    this.directIssueEquipmentSearch.set('');
+    this.directIssueAccessoryInput = '';
+    this.directIssueAccessories = [];
+  }
+
+  addDirectIssueAccessory(): void {
+    const value = this.directIssueAccessoryInput.trim();
+    if (!value) {
+      return;
+    }
+
+    const exists = this.directIssueAccessories.some(
+      (item) => item.toLowerCase() === value.toLowerCase(),
+    );
+    if (exists) {
+      this.directIssueAccessoryInput = '';
+      return;
+    }
+
+    this.directIssueAccessories = [...this.directIssueAccessories, value];
+    this.directIssueAccessoryInput = '';
+    this.syncAccessoriesToForm();
+  }
+
+  removeDirectIssueAccessory(index: number): void {
+    if (index < 0 || index >= this.directIssueAccessories.length) {
+      return;
+    }
+
+    this.directIssueAccessories = this.directIssueAccessories.filter(
+      (_, itemIndex) => itemIndex !== index,
+    );
+    this.syncAccessoriesToForm();
+  }
+
+  onDirectIssueAccessoryKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Enter') {
+      return;
+    }
+
+    event.preventDefault();
+    this.addDirectIssueAccessory();
   }
 
   onEmployeeSigChange(sig: string | null): void {
@@ -560,19 +634,24 @@ export class TransactionListComponent implements OnInit {
   }
 
   submitDirectIssue(): void {
+    if (this.directIssueAccessoryInput.trim()) {
+      this.addDirectIssueAccessory();
+    }
+
     if (this.directIssueForm.invalid) {
       this.directIssueForm.markAllAsTouched();
       return;
     }
 
     const raw = this.directIssueForm.value;
+    const accessoriesProvided = this.directIssueAccessories.join(', ');
     const dto = {
       staffId: Number(raw.staffId),
       issuingOfficerId: Number(raw.issuingOfficerId),
       issuedItems: [
         {
           assetNumber: raw.assetNumber,
-          accessoriesProvided: raw.accessoriesProvided,
+          accessoriesProvided,
         },
       ],
       checklist: raw.checklist,
