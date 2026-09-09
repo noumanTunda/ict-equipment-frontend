@@ -184,6 +184,47 @@ export class EquipmentListComponent implements OnInit {
       });
   }
 
+  private loadMyIssuedEquipment(): void {
+    if (!this.currentUser?.id) {
+      this.equipmentList.set([]);
+      this.totalElements.set(0);
+      this.totalPages.set(1);
+      return;
+    }
+
+    this.isLoading = true;
+
+    this.transactionService
+      .getTransactions({
+        staffId: this.currentUser.id,
+        status: 'COMPLETED',
+        page: 0,
+        size: 500,
+        sort: 'id,desc',
+      })
+      .subscribe({
+        next: (payload) => {
+          const transactions = payload.content || [];
+          const issuedMap = this.buildActiveIssuedEquipmentMap(transactions);
+          const items = Array.from(issuedMap.values());
+
+          this.equipmentList.set(items);
+          this.totalElements.set(items.length);
+          this.totalPages.set(1);
+          this.page.set(1);
+          this.isLoading = false;
+        },
+        error: (err: any) => {
+          this.isLoading = false;
+          const msg = this.authService.getErrorMessage(err);
+          this.toastService.error('Failed to load issued equipment', msg);
+          this.equipmentList.set([]);
+          this.totalElements.set(0);
+          this.totalPages.set(1);
+        },
+      });
+  }
+
   // Computed signal for client-side filtering
   filteredEquipment = computed(() => {
     const list = this.equipmentList();
