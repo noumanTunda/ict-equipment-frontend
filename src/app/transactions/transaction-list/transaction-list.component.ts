@@ -183,6 +183,36 @@ export class TransactionListComponent implements OnInit {
       .get('assetNumber')
       ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.applyDirectIssueChecklistValidators());
+
+    // When the staff user changes, clear an equipment selection that no longer belongs to that user's department.
+    this.directIssueForm
+      .get('staffId')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        const assetControl = this.directIssueForm.get('assetNumber');
+        const selectedAssetNumber = assetControl?.value;
+        if (!selectedAssetNumber) {
+          return;
+        }
+
+        const selectedStaff = this.directIssueSelectedStaff;
+        // Equipment is selected after the staff user; clearing the user should clear the previously dependent equipment selection.
+        if (!selectedStaff) {
+          assetControl?.setValue('', { emitEvent: false });
+          return;
+        }
+
+        const assetStillValid = this.availableEquipment.some(
+          (eq) =>
+            eq.assetNumber === selectedAssetNumber &&
+            (!selectedStaff.department ||
+              eq.department === selectedStaff.department),
+        );
+
+        if (!assetStillValid) {
+          assetControl?.setValue('', { emitEvent: false });
+        }
+      });
   }
 
   loadAvailableEquipment(): void {
