@@ -134,7 +134,26 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    return !!token && !this.isTokenExpired(token);
+  }
+
+  isTokenExpired(token?: string | null): boolean {
+    const targetToken = token ?? this.getToken();
+    if (!targetToken) {
+      return true;
+    }
+
+    const payload = this.decodeTokenPayload(targetToken);
+    const exp = payload?.exp;
+
+    if (!exp || typeof exp !== 'number') {
+      return false;
+    }
+
+    const nowInSeconds = Math.floor(Date.now() / 1000);
+    const allowedClockSkewSeconds = 10;
+    return nowInSeconds >= exp - allowedClockSkewSeconds;
   }
 
   logout(): void {
@@ -208,5 +227,22 @@ export class AuthService {
   private saveAuthSession(auth: AuthResponse): void {
     this.saveToken(auth.accessToken, auth.refreshToken);
     this.saveUser(auth.user);
+  }
+
+  private decodeTokenPayload(token: string): { exp?: number } | null {
+    const tokenParts = token.split('.');
+    if (tokenParts.length < 2) {
+      return null;
+    }
+
+    try {
+      const payload = tokenParts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const normalizedPayload =
+        payload + '='.repeat((4 - (payload.length % 4)) % 4);
+      const decoded = atob(normalizedPayload);
+      return JSON.parse(decoded) as { exp?: number };
+    } catch {
+      return null;
+    }
   }
 }
