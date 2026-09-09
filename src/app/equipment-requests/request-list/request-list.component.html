@@ -364,26 +364,14 @@
             requestForm.get("requestType")?.value === "EXCHANGE"
           ) {
             <div>
-              <label class="form-label text-xs font-bold text-slate-700"
-                >Return Asset Number *</label
-              >
-              <select
-                formControlName="returnAssetNumber"
-                class="form-select text-xs px-3 py-2 rounded border-slate-300 focus:border-[#1394db]"
-              >
-                <option value="">-- Select issued asset --</option>
-                @for (eq of returnAssetOptions; track eq.id) {
-                  <option [value]="eq.assetNumber">
-                    {{ eq.assetNumber }} - {{ eq.brandModel }} ({{
-                      eq.equipmentType
-                    }})
-                  </option>
-                } @empty {
-                  <option value="">
-                    -- No active issued equipment found --
-                  </option>
-                }
-              </select>
+              <app-searchable-select
+                [options]="submitReturnAssetOptions"
+                label="Return Asset Number"
+                placeholder="Search issued asset by number, model or type..."
+                [required]="true"
+                [selectedValue]="requestForm.get('returnAssetNumber')?.value"
+                (selectedValueChange)="requestForm.get('returnAssetNumber')?.setValue($event)"
+              ></app-searchable-select>
             </div>
           }
 
