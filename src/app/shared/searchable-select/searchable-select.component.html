@@ -1,0 +1,72 @@
+<div class="searchable-select-container" [class.disabled]="disabled()">
+  @if (label()) {
+    <label class="searchable-select-label">
+      {{ label() }}
+      @if (required()) {
+        <span class="required-mark">*</span>
+      }
+    </label>
+  }
+
+  <div class="searchable-select-wrapper" (click)="toggleDropdown()">
+    <div class="searchable-select-trigger">
+      @if (selectedOption()) {
+        <span class="selected-label">{{ selectedOption()?.label }}</span>
+        <button
+          type="button"
+          class="clear-btn"
+          (click)="clearSelection($event)"
+          [disabled]="disabled()"
+        >
+          &times;
+        </button>
+      } @else {
+        <span class="placeholder">{{ placeholder() }}</span>
+      }
+      <svg class="dropdown-arrow" [class.open]="isOpen()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+      </svg>
+    </div>
+  </div>
+
+  @if (isOpen()) {
+    <div class="searchable-select-dropdown" (click)="$event.stopPropagation()">
+      <div class="search-input-wrapper">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+        </svg>
+        <input
+          type="text"
+          class="search-input"
+          [placeholder]="placeholder()"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+          (input)="onSearchInput($event)"
+          (keydown)="onSearchKeydown($event)"
+        />
+      </div>
+
+      <div class="options-list">
+        @if (filteredOptions().length === 0) {
+          <div class="no-options">No options found</div>
+        } @else {
+          @for (option of filteredOptions(); track option.value) {
+            <div
+              class="option-item"
+              [class.selected]="selectedOption()?.value === option.value"
+              [class.disabled]="option.disabled"
+              (click)="selectOption(option)"
+            >
+              <span class="option-label">{{ option.label }}</span>
+              @if (selectedOption()?.value === option.value) {
+                <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                </svg>
+              }
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+</div>
