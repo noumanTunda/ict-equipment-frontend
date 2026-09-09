@@ -44,10 +44,10 @@ export interface SpringPage<T> {
 })
 export class EquipmentListComponent implements OnInit {
   private readonly equipmentService = inject(EquipmentService);
+  private readonly transactionService = inject(TransactionService);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   private readonly fb = inject(FormBuilder);
-  private readonly router = inject(Router);
 
   currentUser: User | null = null;
   userRole: string = 'ROLE_STAFF';
@@ -104,11 +104,6 @@ export class EquipmentListComponent implements OnInit {
     this.currentUser = this.authService.getUser();
     this.userRole = this.currentUser?.role || 'ROLE_STAFF';
 
-    if (!this.canManage) {
-      this.router.navigate(['/dashboard/requests']);
-      return;
-    }
-
     this.initForm();
     this.loadEquipment();
   }
@@ -136,7 +131,10 @@ export class EquipmentListComponent implements OnInit {
   }
 
   loadEquipment(): void {
-    if (!this.canManage) return;
+    if (!this.canManage) {
+      this.loadMyIssuedEquipment();
+      return;
+    }
 
     this.isLoading = true;
     const pageIndex = this.page() - 1;
