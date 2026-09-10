@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, map } from 'rxjs';
 import { ApiResponse } from '../models/auth.model';
 import { PaginatedPayload } from '../models/equipment.model';
+import { environment } from '../../environments/environment';
 import {
   ApproveRequestDto,
   CreateEquipmentRequestDto,
@@ -15,12 +16,12 @@ import {
   providedIn: 'root',
 })
 export class RequestService {
-  private readonly baseUrl = 'http://localhost:8080/api/v1/equipment-requests';
+  private readonly equipmentUrl = `${environment.apiUrl}/equipment-requests`;
   private readonly http = inject(HttpClient);
 
   submitRequest(data: CreateEquipmentRequestDto): Observable<EquipmentRequest> {
     return this.http
-      .post<ApiResponse<EquipmentRequest>>(this.baseUrl, data)
+      .post<ApiResponse<EquipmentRequest>>(this.equipmentUrl, data)
       .pipe(map((res) => res.payload));
   }
 
@@ -36,7 +37,7 @@ export class RequestService {
 
     return this.http
       .get<ApiResponse<PaginatedPayload<EquipmentRequest>>>(
-        `${this.baseUrl}/my-requests`,
+        `${this.equipmentUrl}/my-requests`,
         {
           params,
         },
@@ -46,13 +47,13 @@ export class RequestService {
 
   getRequestById(id: number): Observable<EquipmentRequest> {
     return this.http
-      .get<ApiResponse<EquipmentRequest>>(`${this.baseUrl}/${id}`)
+      .get<ApiResponse<EquipmentRequest>>(`${this.equipmentUrl}/${id}`)
       .pipe(map((res) => res.payload));
   }
 
   getRequestByCode(code: string): Observable<EquipmentRequest> {
     return this.http
-      .get<ApiResponse<EquipmentRequest>>(`${this.baseUrl}/code/${code}`)
+      .get<ApiResponse<EquipmentRequest>>(`${this.equipmentUrl}/code/${code}`)
       .pipe(map((res) => res.payload));
   }
 
@@ -68,7 +69,7 @@ export class RequestService {
 
     return this.http
       .get<ApiResponse<PaginatedPayload<EquipmentRequest>>>(
-        `${this.baseUrl}/admin/all`,
+        `${this.equipmentUrl}/admin/all`,
         {
           params,
         },
@@ -90,7 +91,7 @@ export class RequestService {
     return this.http
       .get<
         ApiResponse<PaginatedPayload<EquipmentRequest>>
-      >(`${this.baseUrl}/admin/all/${status}`, { params })
+      >(`${this.equipmentUrl}/admin/all/${status}`, { params })
       .pipe(map((res) => res.payload));
   }
 
@@ -102,21 +103,21 @@ export class RequestService {
       return this.http
         .post<
           ApiResponse<EquipmentRequest>
-        >(`${this.baseUrl}/approve/${officerId}`, data)
+        >(`${this.equipmentUrl}/approve/${officerId}`, data)
         .pipe(
           map((res) => res.payload),
           catchError(() =>
             this.http
               .post<
                 ApiResponse<EquipmentRequest>
-              >(`${this.baseUrl}/approve`, data)
+              >(`${this.equipmentUrl}/approve`, data)
               .pipe(map((res) => res.payload)),
           ),
         );
     }
 
     return this.http
-      .post<ApiResponse<EquipmentRequest>>(`${this.baseUrl}/approve`, data)
+      .post<ApiResponse<EquipmentRequest>>(`${this.equipmentUrl}/approve`, data)
       .pipe(map((res) => res.payload));
   }
 
@@ -127,7 +128,7 @@ export class RequestService {
     return this.http
       .post<
         ApiResponse<EquipmentRequest>
-      >(`${this.baseUrl}/${requestId}/reject`, data)
+      >(`${this.equipmentUrl}/${requestId}/reject`, data)
       .pipe(map((res) => res.payload));
   }
 }
