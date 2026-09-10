@@ -15,6 +15,7 @@ import {
   throwError,
 } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import {environment} from "../../environments/environment";
 
 let isRefreshing = false;
 const refreshTokenSubject = new BehaviorSubject<string | false | null>(null);
@@ -22,7 +23,7 @@ const refreshTokenSubject = new BehaviorSubject<string | false | null>(null);
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = authService.getToken();
-  const isApiRequest = req.url.includes('localhost:8080/api/v1');
+  const isApiRequest = req.url.includes(`${environment.apiUrl}`);
   const isAuthRequest = req.url.includes('/auth/');
 
   if (
