@@ -48,4 +48,25 @@ export class UserDirectoryService {
       defaultIfEmpty([]),
     );
   }
+
+  searchUsers(query: string): Observable<User[]> {
+    const searchEndpoint = this.candidateEndpoints.find(
+      (endpoint) => endpoint.includes('/search')
+    );
+    if (!searchEndpoint) {
+      return of([]);
+    }
+    const url = query.trim()
+      ? `${searchEndpoint}?query=${encodeURIComponent(query)}`
+      : searchEndpoint;
+    return this.http.get<ApiResponse<User[]>>(url).pipe(
+      concatMap((response) => {
+        const wrapped = response as ApiResponse<User[]> & {
+          data?: User[];
+        };
+        return of(wrapped?.payload ?? wrapped?.data ?? []);
+      }),
+      catchError(() => of([])),
+    );
+  }
 }
