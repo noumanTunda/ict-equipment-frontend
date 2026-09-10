@@ -2,11 +2,14 @@ import {
   Component,
   DestroyRef,
   inject,
+  Injector,
   OnInit,
   ViewChild,
   signal,
   computed,
+  runInInjectionContext,
 } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -46,6 +49,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 })
 export class TransactionListComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
   private readonly transactionService = inject(TransactionService);
   private readonly equipmentService = inject(EquipmentService);
   private readonly userDirectoryService = inject(UserDirectoryService);
@@ -63,6 +67,8 @@ export class TransactionListComponent implements OnInit {
   startDateFilter = signal<string>('');
   endDateFilter = signal<string>('');
 
+  staffUsers = signal<User[]>([]);
+
   page = signal<number>(1);
   pageSize = signal<number>(10);
   pageSizeOptions: number[] = [5, 10, 20, 50];
@@ -74,7 +80,6 @@ export class TransactionListComponent implements OnInit {
 
   // Equipment cache
   availableEquipment: Equipment[] = [];
-  staffUsers: User[] = [];
 
   // Modals
   isSignModalOpen = false;
@@ -103,7 +108,16 @@ export class TransactionListComponent implements OnInit {
     this.initDirectIssueForm();
     this.loadTransactions();
     this.loadAvailableEquipment();
-    this.loadStaffUsers();
+    this.searchStaffUsers('');
+
+    // Watch for staff search changes
+    runInInjectionContext(this.injector, () => {
+      toObservable(this.directIssueStaffSearch)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe((query: string) => {
+          this.searchStaffUsers(query);
+        });
+    });
   }
 
   get isStaff(): boolean {
@@ -161,7 +175,7 @@ export class TransactionListComponent implements OnInit {
     if (staffId === null || staffId === undefined || staffId === '') {
       return undefined;
     }
-    return this.staffUsers.find((user) => user.id === Number(staffId));
+    return this.staffUsers().find((user) => user.id === Number(staffId));
   }
 
   get directIssueRequiresChecklist(): boolean {
@@ -172,16 +186,7 @@ export class TransactionListComponent implements OnInit {
   }
 
   get filteredStaffUsers(): User[] {
-    const term = this.directIssueStaffSearch().toLowerCase().trim();
-    if (!term) {
-      return this.staffUsers;
-    }
-
-    return this.staffUsers.filter((user) =>
-      `${user.fullName} ${user.employeeId} ${user.email}`
-        .toLowerCase()
-        .includes(term),
-    );
+    return this.staffUsers();
   }
 
   get filteredAvailableEquipment(): Equipment[] {
@@ -197,12 +202,16 @@ export class TransactionListComponent implements OnInit {
     );
   }
 
-  get staffUserOptions() {
-    return this.staffUsers.map(user => ({
-      value: user.id,
-      label: `${user.fullName} (${user.employeeId}) - ${user.department || 'N/A'}`
-    }));
-  }
+  staffUserOptions = computed(() => {
+    return this.staffUsers()
+      .filter((user) => user.id !== this.currentUser?.id)
+      .map((user) => ({
+        value: user.id,
+        label: `${user.fullName} (${user.employeeId}) - ${
+          user.department || 'N/A'
+        }`,
+      }));
+  });
 
   get equipmentOptions() {
     const selectedStaff = this.directIssueSelectedStaff;
@@ -221,9 +230,9 @@ export class TransactionListComponent implements OnInit {
       );
     }
 
-    return equipmentList.map(eq => ({
+    return equipmentList.map((eq) => ({
       value: eq.assetNumber,
-      label: `${eq.assetNumber} - ${eq.brandModel} (${eq.equipmentType}) - ${eq.department}`
+      label: `${eq.assetNumber} - ${eq.brandModel} (${eq.equipmentType}) - ${eq.department}`,
     }));
   }
 
@@ -296,12 +305,27 @@ export class TransactionListComponent implements OnInit {
 
     this.userDirectoryService.getAllUsers().subscribe({
       next: (users) => {
-        this.staffUsers = users.filter((user) =>
+        this.staffUsers.set(users.filter((user) =>
           (user.role || '').toUpperCase().includes('STAFF'),
-        );
+        ));
       },
       error: () => {
-        this.staffUsers = [];
+        this.staffUsers.set([]);
+      },
+    });
+  }
+
+  searchStaffUsers(query: string): void {
+    if (!this.canManage) {
+      return;
+    }
+
+    this.userDirectoryService.searchUsers(query).subscribe({
+      next: (users) => {
+        this.staffUsers.set(users);
+      },
+      error: () => {
+        this.staffUsers.set([]);
       },
     });
   }
@@ -359,7 +383,6 @@ export class TransactionListComponent implements OnInit {
             : 1);
 
         this.transactions.set(items);
-        this.hydrateStaffUsersFromTransactions(items);
         this.totalElements.set(Number(totalElements));
         this.totalPages.set(Number(Math.max(1, totalPages)));
         // Sync UI page (client is 1-based, backend is 0-based)
@@ -388,14 +411,18 @@ export class TransactionListComponent implements OnInit {
         t.issuedItems.some(
           (item) =>
             item.assetNumber.toLowerCase().includes(term) ||
-            (item.serialNumber && item.serialNumber.toLowerCase().includes(term)) ||
-            (item.equipmentType && item.equipmentType.toLowerCase().includes(term)),
+            (item.serialNumber &&
+              item.serialNumber.toLowerCase().includes(term)) ||
+            (item.equipmentType &&
+              item.equipmentType.toLowerCase().includes(term)),
         ) ||
         t.returnedItems.some(
           (item) =>
             item.assetNumber.toLowerCase().includes(term) ||
-            (item.serialNumber && item.serialNumber.toLowerCase().includes(term)) ||
-            (item.equipmentType && item.equipmentType.toLowerCase().includes(term)),
+            (item.serialNumber &&
+              item.serialNumber.toLowerCase().includes(term)) ||
+            (item.equipmentType &&
+              item.equipmentType.toLowerCase().includes(term)),
         ),
     );
   });
@@ -750,38 +777,5 @@ export class TransactionListComponent implements OnInit {
     this.directIssueForm
       .get('accessoriesProvided')
       ?.setValue(this.directIssueAccessories.join(', '));
-  }
-
-  private hydrateStaffUsersFromTransactions(
-    transactions: EquipmentTransaction[],
-  ): void {
-    if (!this.canManage) {
-      return;
-    }
-
-    const knownIds = new Set(this.staffUsers.map((user) => user.id));
-    const derivedUsers: User[] = [];
-
-    for (const transaction of transactions) {
-      if (knownIds.has(transaction.staffId)) {
-        continue;
-      }
-
-      knownIds.add(transaction.staffId);
-      derivedUsers.push({
-        id: transaction.staffId,
-        employeeId: `STAFF-${transaction.staffId}`,
-        fullName: transaction.staffName,
-        email: '',
-        department: '',
-        role: 'ROLE_STAFF',
-        mobileNo: '',
-        status: 'ACTIVE',
-      });
-    }
-
-    if (derivedUsers.length) {
-      this.staffUsers = [...this.staffUsers, ...derivedUsers];
-    }
   }
 }
