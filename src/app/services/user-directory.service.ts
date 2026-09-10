@@ -11,6 +11,7 @@ import {
   take,
 } from 'rxjs';
 import { ApiResponse, User } from '../models/auth.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -19,12 +20,7 @@ export class UserDirectoryService {
   private readonly http = inject(HttpClient);
 
   private readonly candidateEndpoints: string[] = [
-    // 'http://localhost:8080/api/v1/users/all',
-    // 'http://localhost:8080/api/v1/users',
-    // 'http://localhost:8080/api/v1/auth/users',
-    // 'http://localhost:8080/api/v1/auth/users',
-    'http://localhost:8080/api/v1/users/search',
-    // 'http://localhost:8080/api/v1/users',
+    `${environment.apiUrl}/users/search`,
   ];
 
   getAllUsers(): Observable<User[]> {
