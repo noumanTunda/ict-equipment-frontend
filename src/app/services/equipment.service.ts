@@ -8,12 +8,13 @@ import {
   PaginatedPayload,
   UpdateEquipmentDto,
 } from '../models/equipment.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class EquipmentService {
-  private readonly baseUrl = 'http://localhost:8080/api/v1/equipment';
+  private readonly baseUrl = `${environment.apiUrl}/equipment`;
   private readonly http = inject(HttpClient);
 
   createEquipment(data: CreateEquipmentDto): Observable<Equipment> {
