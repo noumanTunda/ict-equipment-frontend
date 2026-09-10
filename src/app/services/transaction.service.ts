@@ -10,14 +10,14 @@ import {
   SignTransactionDto,
   TransactionFilterParams,
 } from '../models/transaction.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TransactionService {
-  private readonly baseUrl = 'http://localhost:8080/api/v1/equipment-transactions';
-  private readonly legacyBaseUrl =
-    'http://localhost:8080/api/v1/equipment-transactions';
+  private readonly baseUrl = `${environment.apiUrl}/equipment-transactions`;
+  private readonly legacyBaseUrl = `${environment.apiUrl}/equipment-transactions`;
   private readonly http = inject(HttpClient);
 
   createTransaction(
