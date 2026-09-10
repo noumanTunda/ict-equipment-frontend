@@ -13,12 +13,13 @@ import {
   ResetPasswordRequestDto,
   User,
 } from '../models/auth.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly authApiUrl = 'http://localhost:8080/api/v1/auth';
+  private readonly authApiUrl = `${environment.apiUrl}/auth`;
   private readonly accessTokenKey = 'access_token';
   private readonly refreshTokenKey = 'refresh_token';
   private readonly userKey = 'current_user';
