@@ -32,14 +32,10 @@ interface PasswordStrength {
 export class RegisterComponent implements OnInit, OnDestroy {
   readonly departments = [
     'ICT',
-    'Procurement',
-    'Finance',
-    'Human Resources',
-    'Legal',
-    'Internal Audit',
-    'Administration',
-    'Planning, Monitoring & Evaluation',
-    'Other',
+    'FINANCE_AND_ACCOUNTS',
+    'LEGAL_SERVICES',
+    'HUMAN_RESOURCE_AND_ADMINISTRATION',
+    'PLANNING_AND_COORDINATION',
   ];
 
   readonly roles = ['ROLE_STAFF', 'ROLE_ICT_OFFICER', 'ROLE_ADMIN'];
