@@ -1,0 +1,129 @@
+<div class="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-8">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-slate-900 mb-2">Keyphrase Management</h1>
+      <p class="text-sm text-slate-600">
+        Set or update your keyphrase for signing transactions
+      </p>
+    </div>
+
+    <!-- Set Keyphrase Form -->
+    @if (!hasKeyphrase) {
+      <form [formGroup]="setKeyphraseForm" (ngSubmit)="setKeyphrase()" class="space-y-4">
+        <div>
+          <label class="form-label text-sm font-bold text-slate-700 block mb-2">
+            Keyphrase *
+          </label>
+          <input
+            type="password"
+            formControlName="keyphrase"
+            placeholder="Enter your keyphrase (min 6 characters)"
+            class="form-control w-full px-4 py-3 rounded border-slate-300 focus:border-[#1394db]"
+          />
+          @if (setKeyphraseForm.get('keyphrase')?.touched && setKeyphraseForm.get('keyphrase')?.invalid) {
+            <div class="text-rose-500 text-xs mt-1">
+              Keyphrase must be at least 6 characters
+            </div>
+          }
+        </div>
+
+        <div>
+          <label class="form-label text-sm font-bold text-slate-700 block mb-2">
+            Confirm Keyphrase *
+          </label>
+          <input
+            type="password"
+            formControlName="confirmPassword"
+            placeholder="Confirm your keyphrase"
+            class="form-control w-full px-4 py-3 rounded border-slate-300 focus:border-[#1394db]"
+          />
+        </div>
+
+        <button
+          type="submit"
+          [disabled]="isLoading"
+          class="w-full bg-[#1394db] text-white py-3 rounded font-bold hover:bg-[#0d7acc] disabled:opacity-50 transition-colors"
+        >
+          @if (isLoading) {
+            Setting...
+          } @else {
+            Set Keyphrase
+          }
+        </button>
+      </form>
+    }
+
+    <!-- Update Keyphrase Form -->
+    @if (hasKeyphrase) {
+      <form [formGroup]="updateKeyphraseForm" (ngSubmit)="updateKeyphrase()" class="space-y-4">
+        <div>
+          <label class="form-label text-sm font-bold text-slate-700 block mb-2">
+            Current Keyphrase *
+          </label>
+          <input
+            type="password"
+            formControlName="currentKeyphrase"
+            placeholder="Enter your current keyphrase"
+            class="form-control w-full px-4 py-3 rounded border-slate-300 focus:border-[#1394db]"
+          />
+          @if (updateKeyphraseForm.get('currentKeyphrase')?.touched && updateKeyphraseForm.get('currentKeyphrase')?.invalid) {
+            <div class="text-rose-500 text-xs mt-1">
+              Current keyphrase is required (min 6 characters)
+            </div>
+          }
+        </div>
+
+        <div>
+          <label class="form-label text-sm font-bold text-slate-700 block mb-2">
+            New Keyphrase *
+          </label>
+          <input
+            type="password"
+            formControlName="newKeyphrase"
+            placeholder="Enter your new keyphrase (min 6 characters)"
+            class="form-control w-full px-4 py-3 rounded border-slate-300 focus:border-[#1394db]"
+          />
+          @if (updateKeyphraseForm.get('newKeyphrase')?.touched && updateKeyphraseForm.get('newKeyphrase')?.invalid) {
+            <div class="text-rose-500 text-xs mt-1">
+              New keyphrase must be at least 6 characters
+            </div>
+          }
+        </div>
+
+        <div>
+          <label class="form-label text-sm font-bold text-slate-700 block mb-2">
+            Confirm New Keyphrase *
+          </label>
+          <input
+            type="password"
+            formControlName="confirmNewKeyphrase"
+            placeholder="Confirm your new keyphrase"
+            class="form-control w-full px-4 py-3 rounded border-slate-300 focus:border-[#1394db]"
+          />
+        </div>
+
+        <button
+          type="submit"
+          [disabled]="isLoading"
+          class="w-full bg-[#1394db] text-white py-3 rounded font-bold hover:bg-[#0d7acc] disabled:opacity-50 transition-colors"
+        >
+          @if (isLoading) {
+            Updating...
+          } @else {
+            Update Keyphrase
+          }
+        </button>
+      </form>
+    }
+
+    <div class="mt-6 p-4 bg-slate-50 rounded border border-slate-200">
+      <h3 class="text-sm font-bold text-slate-800 mb-2">About Keyphrases</h3>
+      <ul class="text-xs text-slate-600 space-y-1">
+        <li>• Your keyphrase is used to sign equipment transactions</li>
+        <li>• It should be at least 6 characters long</li>
+        <li>• Keep it secure and do not share it with others</li>
+        <li>• You can update it anytime if needed</li>
+      </ul>
+    </div>
+  </div>
+</div>
