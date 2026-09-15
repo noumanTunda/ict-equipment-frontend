@@ -89,7 +89,22 @@ export class RequestListComponent implements OnInit {
   ];
   returnConditions: ReturnCondition[] = ['GOOD', 'FAIR', 'DAMAGED', 'OBSOLETE'];
 
-  requestSignatureBase64: string | null = null;
+  // Accessories mapping for each equipment type
+  equipmentAccessories: Record<string, string[]> = {
+    LAPTOP: ['Charger', 'Mouse', 'Carrying Bag', 'External HDD', 'Headset','Mouse Pad','Docking Station','Laptop Stand'],
+    DESKTOP: ['Keyboard', 'Mouse', 'Speakers','Web Cam','Bluetooth Adapter','Wi-Fi Adapter'],
+    UPS: ['Power Cord', 'USB Cable', 'Manual','UPS Stand'],
+    SCANNER: ['Power Cord', 'USB Cable', 'Driver CD', 'Manual'],
+    PRINTER: ['Power Cord', 'USB Cable', 'Driver CD', 'Paper Tray', 'Manual'],
+    MONITOR: ['Power Cord', 'HDMI Cable', 'VGA Cable','Monitor Arm', 'Light Bar', 'USB B Cable'],
+    OTHER: []
+  };
+
+  // Form control for selected accessories
+  selectedAccessories: string[] = [];
+  otherAccessoriesText: string = '';
+
+  requestKeyphrase: string = '';
 
   // Modals
   isSubmitModalOpen = false;
