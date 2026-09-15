@@ -12,7 +12,6 @@ export interface EquipmentRequest {
   requestCode: string;
   staffId: number;
   staffName: string;
-  employeeSignature: string | null;
   requestType: RequestType;
   reason: string;
   returnAssetNumber: string | null;
@@ -34,7 +33,7 @@ export interface CreateEquipmentRequestDto {
   returnAssetNumber?: string;
   issueAssetNumber?: string;
   preferredEquipmentType: EquipmentType;
-  employeeSignature?: string;
+  keyphrase?: string;
 }
 
 export interface ApproveRequestDto {
