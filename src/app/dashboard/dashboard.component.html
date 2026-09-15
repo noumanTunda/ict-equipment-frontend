@@ -527,12 +527,12 @@
                         <td
                           class="text-[11px] font-semibold"
                           [ngClass]="
-                            req.employeeSignature
+                            req.status === 'APPROVED'
                               ? 'text-emerald-600'
                               : 'text-slate-400'
                           "
                         >
-                          {{ req.employeeSignature ? "Signed" : "Not signed" }}
+                          {{ req.status === 'APPROVED' ? "Approved" : "Pending" }}
                         </td>
                       </tr>
                     } @empty {
@@ -581,7 +581,7 @@
                         <td class="text-[11px] font-semibold">
                           <span
                             [ngClass]="
-                              txn.employeeSignature
+                              txn.employeeSigned
                                 ? 'text-emerald-600'
                                 : 'text-slate-400'
                             "
@@ -590,7 +590,7 @@
                           <span class="mx-1 text-slate-300">|</span>
                           <span
                             [ngClass]="
-                              txn.officerSignature
+                              txn.officerSigned
                                 ? 'text-emerald-600'
                                 : 'text-slate-400'
                             "
