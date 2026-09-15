@@ -4,7 +4,6 @@ import {
   inject,
   Injector,
   OnInit,
-  ViewChild,
   signal,
   computed,
   runInInjectionContext,
@@ -25,7 +24,6 @@ import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import {
   EquipmentTransaction,
-  SignTransactionDto,
   TransactionFilterParams,
   TransactionStatus,
 } from '../../models/transaction.model';
