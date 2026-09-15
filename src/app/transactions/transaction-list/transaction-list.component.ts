@@ -31,7 +31,7 @@ import {
 } from '../../models/transaction.model';
 import { Equipment } from '../../models/equipment.model';
 import { User } from '../../models/auth.model';
-import { SignaturePadComponent } from '../../shared/signature-pad/signature-pad.component';
+import { KeyphraseService } from '../../services/keyphrase.service';
 import { SearchableSelectComponent } from '../../shared/searchable-select/searchable-select.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -42,7 +42,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    SignaturePadComponent,
     SearchableSelectComponent,
   ],
   templateUrl: './transaction-list.component.html',
@@ -55,6 +54,7 @@ export class TransactionListComponent implements OnInit {
   private readonly userDirectoryService = inject(UserDirectoryService);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
+  private readonly keyphraseService = inject(KeyphraseService);
   private readonly fb = inject(FormBuilder);
 
   currentUser: User | null = null;
@@ -89,11 +89,8 @@ export class TransactionListComponent implements OnInit {
 
   selectedTransaction: EquipmentTransaction | null = null;
 
-  @ViewChild('employeeSigPad') employeeSigPad?: SignaturePadComponent;
-  @ViewChild('officerSigPad') officerSigPad?: SignaturePadComponent;
-
-  employeeSignatureBase64: string | null = null;
-  officerSignatureBase64: string | null = null;
+  employeeKeyphrase: string = '';
+  officerKeyphrase: string = '';
   directIssueStaffSearch = signal<string>('');
   directIssueEquipmentSearch = signal<string>('');
   directIssueAccessoryInput = '';
@@ -139,11 +136,11 @@ export class TransactionListComponent implements OnInit {
   }
 
   get selectedTransactionHasEmployeeSignature(): boolean {
-    return !!this.selectedTransaction?.employeeSignature;
+    return !!this.selectedTransaction?.employeeSigned;
   }
 
   get selectedTransactionHasOfficerSignature(): boolean {
-    return !!this.selectedTransaction?.officerSignature;
+    return !!this.selectedTransaction?.officerSigned;
   }
 
   get canCaptureEmployeeSignature(): boolean {
@@ -469,8 +466,8 @@ export class TransactionListComponent implements OnInit {
   openSignModal(txn: EquipmentTransaction, event?: Event): void {
     event?.stopPropagation();
     this.selectedTransaction = txn;
-    this.employeeSignatureBase64 = null;
-    this.officerSignatureBase64 = null;
+    this.employeeKeyphrase = '';
+    this.officerKeyphrase = '';
     this.isSignModalOpen = true;
   }
 
@@ -562,32 +559,37 @@ export class TransactionListComponent implements OnInit {
     this.addDirectIssueAccessory();
   }
 
-  onEmployeeSigChange(sig: string | null): void {
-    this.employeeSignatureBase64 = sig;
-  }
-
-  onOfficerSigChange(sig: string | null): void {
-    this.officerSignatureBase64 = sig;
-  }
 
   submitSignatures(): void {
     if (!this.selectedTransaction) return;
 
-    const payload: SignTransactionDto = {};
-
     if (this.canCaptureEmployeeSignature) {
-      if (!this.employeeSignatureBase64) {
+      if (!this.employeeKeyphrase || this.employeeKeyphrase.length < 6) {
         this.toastService.warning(
-          'Signature Required',
-          'Please sign before submitting the transaction.',
+          'Keyphrase Required',
+          'Please enter your keyphrase (min 6 characters) before signing.',
         );
         return;
       }
 
-      payload.employeeSignature = this.employeeSignatureBase64;
-    }
-
-    if (this.canCaptureOfficerSignature) {
+      this.isLoading = true;
+      this.keyphraseService.signTransactionAsEmployee(this.selectedTransaction.id, this.employeeKeyphrase).subscribe({
+        next: (updated) => {
+          this.isLoading = false;
+          this.closeModals();
+          this.toastService.success(
+            'Transaction Signed',
+            `Transaction ${updated.transactionCode} signed successfully!`,
+          );
+          this.loadTransactions();
+        },
+        error: (err) => {
+          this.isLoading = false;
+          const msg = this.authService.getErrorMessage(err);
+          this.toastService.error('Error Signing Transaction', msg);
+        },
+      });
+    } else if (this.canCaptureOfficerSignature) {
       if (!this.selectedTransactionHasEmployeeSignature) {
         this.toastService.warning(
           'Awaiting Staff Signature',
@@ -596,29 +598,16 @@ export class TransactionListComponent implements OnInit {
         return;
       }
 
-      if (!this.officerSignatureBase64) {
+      if (!this.officerKeyphrase || this.officerKeyphrase.length < 6) {
         this.toastService.warning(
-          'Signature Required',
-          'Please sign as the issuing officer before submitting.',
+          'Keyphrase Required',
+          'Please enter your keyphrase (min 6 characters) before signing.',
         );
         return;
       }
 
-      payload.officerSignature = this.officerSignatureBase64;
-    }
-
-    if (!this.canCaptureEmployeeSignature && !this.canCaptureOfficerSignature) {
-      this.toastService.warning(
-        'Nothing to Submit',
-        'This transaction already has the available signatures.',
-      );
-      return;
-    }
-
-    this.isLoading = true;
-    this.transactionService
-      .submitSignatures(this.selectedTransaction.id, payload)
-      .subscribe({
+      this.isLoading = true;
+      this.keyphraseService.signTransactionAsOfficer(this.selectedTransaction.id, this.officerKeyphrase).subscribe({
         next: (updated) => {
           this.isLoading = false;
           this.closeModals();
@@ -634,6 +623,12 @@ export class TransactionListComponent implements OnInit {
           this.toastService.error('Error Signing Transaction', msg);
         },
       });
+    } else {
+      this.toastService.warning(
+        'Nothing to Submit',
+        'This transaction already has the available signatures.',
+      );
+    }
   }
 
   confirmCancel(): void {
