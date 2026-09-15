@@ -41,10 +41,8 @@ export interface EquipmentTransaction {
   issuingOfficerId: number;
   issuingOfficerName: string;
   status: TransactionStatus;
-  employeeSignature: string | null;
-  officerSignature: string | null;
-  employeeSignedAt: string | null;
-  officerSignedAt: string | null;
+  employeeSigned: boolean;
+  officerSigned: boolean;
   createdAt: string;
   updatedAt: string;
   issuedItems: IssuedItem[];
@@ -78,8 +76,7 @@ export interface DirectIssueDto {
 }
 
 export interface SignTransactionDto {
-  employeeSignature?: string;
-  officerSignature?: string;
+  keyphrase: string;
 }
 
 export interface TransactionFilterParams {
