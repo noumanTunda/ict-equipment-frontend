@@ -24,7 +24,7 @@ import { Equipment } from '../../models/equipment.model';
 import { EquipmentType } from '../../models/request.model';
 import { User } from '../../models/auth.model';
 import { IctChecklist, ReturnCondition } from '../../models/transaction.model';
-import { SignaturePadComponent } from '../../shared/signature-pad/signature-pad.component';
+import { KeyphraseService } from '../../services/keyphrase.service';
 import { SearchableSelectComponent } from '../../shared/searchable-select/searchable-select.component';
 import { catchError, forkJoin, of } from 'rxjs';
 
@@ -35,7 +35,6 @@ import { catchError, forkJoin, of } from 'rxjs';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    SignaturePadComponent,
     SearchableSelectComponent,
   ],
   templateUrl: './request-list.component.html',
@@ -47,6 +46,7 @@ export class RequestListComponent implements OnInit {
   private readonly userDirectoryService = inject(UserDirectoryService);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
+  private readonly keyphraseService = inject(KeyphraseService);
   private readonly fb = inject(FormBuilder);
 
   currentUser: User | null = null;
@@ -146,15 +146,14 @@ export class RequestListComponent implements OnInit {
       preferredEquipmentType: ['LAPTOP'],
       returnAssetNumber: [''],
       issueAssetNumber: [''],
-      employeeSignature: [null as string | null],
     });
 
     this.approveForm = this.fb.group({
       issueAssetNumber: [''],
       returnAssetNumber: [''],
-      accessoriesProvided: ['Charger, Mouse, Carrying Bag'],
-      returnCondition: ['GOOD' as ReturnCondition],
-      returnRemarks: ['Normal wear and tear'],
+      accessoriesProvided: [''],
+      returnCondition: [''],
+      returnRemarks: [''],
       checklist: this.fb.group({
         osInstalled: ['Windows 11 Pro', [Validators.required]],
         appSystemInstalled: [
@@ -380,9 +379,9 @@ export class RequestListComponent implements OnInit {
 
   get requiresChecklist(): boolean {
     const type = this.normalizeEquipmentType(
-
       this.selectedRequest?.preferredEquipmentType || '',
     );
+    // Only show checklist for LAPTOP or DESKTOP equipment types
     return !!type && (type === 'LAPTOP' || type === 'DESKTOP');
   }
 
@@ -393,15 +392,58 @@ export class RequestListComponent implements OnInit {
     return preferredType || 'N/A';
   }
 
+  get currentEquipmentType(): string {
+    return this.normalizeEquipmentType(
+      this.selectedRequest?.preferredEquipmentType || '',
+    );
+  }
+
+  get accessoriesForCurrentType(): string[] {
+    return this.equipmentAccessories[this.currentEquipmentType] || [];
+  }
+
+  get isOtherEquipmentType(): boolean {
+    return this.currentEquipmentType === 'OTHER';
+  }
+
+  get isReturnRequest(): boolean {
+    return this.selectedRequest?.requestType === 'RETURN';
+  }
+
+  onAccessoryToggle(accessory: string, event: Event): void {
+    const checkbox = event.target as HTMLInputElement;
+    if (checkbox.checked) {
+      this.selectedAccessories.push(accessory);
+    } else {
+      const index = this.selectedAccessories.indexOf(accessory);
+      if (index > -1) {
+        this.selectedAccessories.splice(index, 1);
+      }
+    }
+    this.updateAccessoriesProvided();
+  }
+
+  onOtherAccessoriesChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.otherAccessoriesText = input.value;
+    this.updateAccessoriesProvided();
+  }
+
+  private updateAccessoriesProvided(): void {
+    let accessories: string[] = [];
+    if (this.isOtherEquipmentType) {
+      accessories = this.otherAccessoriesText.split(',').map(a => a.trim()).filter(a => a);
+    } else {
+      accessories = [...this.selectedAccessories];
+    }
+    this.approveForm.get('accessoriesProvided')?.setValue(accessories.join(', '));
+  }
+
   getPreferredEquipmentType(request: EquipmentRequest): string {
     const preferredType = this.normalizeEquipmentType(
       request.preferredEquipmentType || '',
     );
     return preferredType || 'N/A';
-  }
-
-  get selectedRequestHasSignature(): boolean {
-    return !!this.selectedRequest?.employeeSignature;
   }
 
   onSearchChange(term: string): void {
@@ -431,9 +473,8 @@ export class RequestListComponent implements OnInit {
     this.requestForm.reset({
       requestType: 'ISSUE',
       preferredEquipmentType: 'LAPTOP',
-      employeeSignature: null,
     });
-    this.requestSignatureBase64 = null;
+    this.requestKeyphrase = '';
     this.submitReturnAssetSearch.set('');
     if (this.isStaff && this.currentUser?.id) {
       this.loadReturnAssetOptions(this.currentUser.id);
@@ -452,8 +493,11 @@ export class RequestListComponent implements OnInit {
     this.approveForm.patchValue({
       issueAssetNumber: reqItem.issueAssetNumber || '',
       returnAssetNumber: reqItem.returnAssetNumber || '',
-      returnCondition: 'GOOD',
+      returnCondition: '',
+      accessoriesProvided: '',
     });
+    this.selectedAccessories = [];
+    this.otherAccessoriesText = '';
 
     if (reqItem.staffId) {
       this.loadReturnAssetOptions(reqItem.staffId);
@@ -527,14 +571,20 @@ export class RequestListComponent implements OnInit {
     this.isRejectModalOpen = false;
     this.isDetailModalOpen = false;
     this.selectedRequest = null;
+    this.requestKeyphrase = '';
     this.submitReturnAssetSearch.set('');
     this.approveIssueAssetSearch.set('');
     this.approveReturnAssetSearch.set('');
   }
 
-  onRequestSignatureChange(signature: string | null): void {
-    this.requestSignatureBase64 = signature;
-    this.requestForm.get('employeeSignature')?.setValue(signature);
+  onReturnAssetSelected(assetNumber: string): void {
+    this.requestForm.get('returnAssetNumber')?.setValue(assetNumber);
+
+    // Find the equipment and set the preferred equipment type based on the selected asset
+    const equipment = this.returnAssetOptions.find(eq => eq.assetNumber === assetNumber);
+    if (equipment && equipment.equipmentType) {
+      this.requestForm.get('preferredEquipmentType')?.setValue(equipment.equipmentType);
+    }
   }
 
   private loadReturnAssetOptions(staffId: number): void {
@@ -574,6 +624,8 @@ export class RequestListComponent implements OnInit {
             }
           }
 
+          const staffDepartment = this.getStaffDepartment(staffId);
+
           this.returnAssetOptions = Array.from(issuedAssetNumbers)
             .filter((assetNumber) => !returnedAssetNumbers.has(assetNumber))
             .map((assetNumber) => {
@@ -582,11 +634,15 @@ export class RequestListComponent implements OnInit {
               );
 
               if (equipment) {
+                // Filter by department if specified
+                if (staffDepartment && equipment.department !== staffDepartment) {
+                  return null;
+                }
                 return equipment;
               }
 
               const meta = issuedAssetMeta.get(assetNumber);
-              return {
+              const fallbackEquipment = {
                 id: 0,
                 assetNumber,
                 serialNumber: '',
@@ -598,7 +654,11 @@ export class RequestListComponent implements OnInit {
                 createdAt: '',
                 updatedAt: '',
               } as Equipment;
-            });
+
+              // For fallback equipment, we can't filter by department since we don't have that info
+              return fallbackEquipment;
+            })
+            .filter((eq): eq is Equipment => eq !== null);
           this.isLoadingReturnAssets = false;
         },
         error: () => {
@@ -711,13 +771,11 @@ export class RequestListComponent implements OnInit {
     }
 
     const val: CreateEquipmentRequestDto = this.requestForm.value;
-    const employeeSignature =
-      this.requestSignatureBase64 ?? val.employeeSignature ?? null;
 
-    if (this.isStaff && !employeeSignature) {
+    if (this.isStaff && (!this.requestKeyphrase || this.requestKeyphrase.length < 6)) {
       this.toastService.warning(
-        'Signature Required',
-        'Please sign the request before submitting it.',
+        'Keyphrase Required',
+        'Please enter your keyphrase (min 6 characters) before submitting the request.',
       );
       return;
     }
@@ -735,7 +793,7 @@ export class RequestListComponent implements OnInit {
       .submitRequest({
         ...val,
         preferredEquipmentType: val.preferredEquipmentType,
-        employeeSignature: employeeSignature ?? undefined,
+        keyphrase: this.requestKeyphrase,
       })
       .subscribe({
         next: (res) => {
