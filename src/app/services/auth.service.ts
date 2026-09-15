@@ -88,6 +88,16 @@ export class AuthService {
     );
   }
 
+  changePassword(currentPassword: string, newPassword: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(
+      `${this.authApiUrl}/change-password`,
+      {
+        currentPassword,
+        newPassword,
+      },
+    );
+  }
+
   saveToken(accessToken: string, refreshToken?: string): void {
     if (typeof window === 'undefined') {
       return;
