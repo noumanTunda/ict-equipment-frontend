@@ -4,6 +4,8 @@ import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
+import { KeyphraseComponent } from './auth/keyphrase/keyphrase.component';
+import { ChangePasswordComponent } from './auth/change-password/change-password.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { EquipmentListComponent } from './equipment/equipment-list/equipment-list.component';
 import { RequestListComponent } from './equipment-requests/request-list/request-list.component';
@@ -35,6 +37,18 @@ export const routes: Routes = [
     path: 'forgot-password',
     component: ForgotPasswordComponent,
     title: 'Forgot Password | ICT Equipment Portal',
+  },
+  {
+    path: 'keyphrase',
+    component: KeyphraseComponent,
+    canActivate: [AuthGuard.canActivate],
+    title: 'Keyphrase Management | ICT Equipment Portal',
+  },
+  {
+    path: 'change-password',
+    component: ChangePasswordComponent,
+    canActivate: [AuthGuard.canActivate],
+    title: 'Change Password | ICT Equipment Portal',
   },
   {
     path: 'dashboard',
