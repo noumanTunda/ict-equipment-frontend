@@ -372,11 +372,21 @@
           }
 
           @if (isStaff) {
-            <app-signature-pad
-              title="Staff Request Signature"
-              [required]="true"
-              (signatureChange)="onRequestSignatureChange($event)"
-            ></app-signature-pad>
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700 block mb-2">
+                Keyphrase *
+              </label>
+              <input
+                type="password"
+                [(ngModel)]="requestKeyphrase"
+                placeholder="Enter your keyphrase (min 6 characters)"
+                class="form-control w-full px-4 py-3 rounded border-slate-300 focus:border-[#1394db]"
+                [ngModelOptions]="{ standalone: true }"
+              />
+              <p class="text-[11px] text-slate-500 mt-1">
+                Your keyphrase is used to sign this request securely.
+              </p>
+            </div>
           }
 
           <div
