@@ -157,7 +157,7 @@
                     <span
                       class="flex items-center gap-1"
                       [ngClass]="
-                        txn.employeeSignature
+                        txn.employeeSigned
                           ? 'text-emerald-600'
                           : 'text-slate-400'
                       "
@@ -167,7 +167,7 @@
                     <span
                       class="flex items-center gap-1"
                       [ngClass]="
-                        txn.officerSignature
+                        txn.officerSigned
                           ? 'text-emerald-600'
                           : 'text-slate-400'
                       "
@@ -193,7 +193,7 @@
                   @if (
                     txn.status === "PENDING_SIGNATURE" &&
                     isStaff &&
-                    !txn.employeeSignature
+                    !txn.employeeSigned
                   ) {
                     <button
                       class="action-btn sign-btn"
@@ -325,30 +325,48 @@
           <div
             class="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-600"
           >
-            @if (selectedTransaction.employeeSignature) {
-              Staff signature is already present and visible on the record.
+            @if (selectedTransaction.employeeSigned) {
+              Staff has already signed this transaction.
             } @else {
-              Staff signature has not been captured yet.
+              Staff has not signed this transaction yet.
             }
           </div>
 
           @if (canCaptureEmployeeSignature) {
-            <app-signature-pad
-              #employeeSigPad
-              title="Staff Signature"
-              [required]="true"
-              (signatureChange)="onEmployeeSigChange($event)"
-            ></app-signature-pad>
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700 block mb-2">
+                Enter Your Keyphrase *
+              </label>
+              <input
+                type="password"
+                [(ngModel)]="employeeKeyphrase"
+                placeholder="Enter your keyphrase (min 6 characters)"
+                class="form-control w-full px-4 py-3 rounded border-slate-300 focus:border-[#1394db]"
+                [ngModelOptions]="{ standalone: true }"
+              />
+              <p class="text-[11px] text-slate-500 mt-1">
+                Your keyphrase is used to sign this transaction securely.
+              </p>
+            </div>
           }
 
           @if (canCaptureOfficerSignature) {
-            <app-signature-pad
-              #officerSigPad
-              title="ICT Issuing Officer Signature"
-              [required]="true"
-              (signatureChange)="onOfficerSigChange($event)"
-            ></app-signature-pad>
-          } @else if (canManage && !selectedTransaction.employeeSignature) {
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700 block mb-2">
+                Enter Your Keyphrase *
+              </label>
+              <input
+                type="password"
+                [(ngModel)]="officerKeyphrase"
+                placeholder="Enter your keyphrase (min 6 characters)"
+                class="form-control w-full px-4 py-3 rounded border-slate-300 focus:border-[#1394db]"
+                [ngModelOptions]="{ standalone: true }"
+              />
+              <p class="text-[11px] text-slate-500 mt-1">
+                Your keyphrase is used to sign this transaction as the issuing officer.
+              </p>
+            </div>
+          } @else if (canManage && !selectedTransaction.employeeSigned) {
             <div
               class="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800"
             >
@@ -373,19 +391,19 @@
             [disabled]="
               isLoading ||
               (canCaptureEmployeeSignature
-                ? !employeeSignatureBase64
+                ? !employeeKeyphrase || employeeKeyphrase.length < 6
                 : canCaptureOfficerSignature
-                  ? !officerSignatureBase64
+                  ? !officerKeyphrase || officerKeyphrase.length < 6
                   : true)
             "
             class="action-btn edit-btn !py-2 !px-5 font-bold disabled:opacity-50"
           >
             {{
               canCaptureEmployeeSignature
-                ? "Submit Staff Signature"
+                ? "Sign Transaction"
                 : canCaptureOfficerSignature
-                  ? "Submit Officer Signature &amp; Complete"
-                  : "No Signature Needed"
+                  ? "Sign &amp; Complete Transaction"
+                  : "No Action Needed"
             }}
           </button>
         </div>
