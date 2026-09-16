@@ -65,3 +65,11 @@ export interface PaginatedPayload<T> {
 export type PaginatedEquipmentResponse = ApiResponse<
   PaginatedPayload<Equipment>
 >;
+
+export interface ReInspectionDto {
+  targetStatus: 'AVAILABLE' | 'MAINTENANCE';
+  itemCondition: ItemCondition;
+  remarks?: string;
+  maintenanceNotes?: string;
+  estimatedMaintenanceCost?: number;
+}
