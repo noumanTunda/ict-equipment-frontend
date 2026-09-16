@@ -10,6 +10,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { EquipmentListComponent } from './equipment/equipment-list/equipment-list.component';
 import { RequestListComponent } from './equipment-requests/request-list/request-list.component';
 import { TransactionListComponent } from './transactions/transaction-list/transaction-list.component';
+import { ReportsComponent } from './reports/reports.component';
 import { AuthGuard } from './guards/AuthGuard';
 
 export const routes: Routes = [
@@ -58,6 +59,11 @@ export const routes: Routes = [
         path: 'transactions',
         component: TransactionListComponent,
         title: 'Equipment Transactions | ICT Equipment Portal',
+      },
+      {
+        path: 'reports',
+        component: ReportsComponent,
+        title: 'Reports Management | ICT Equipment Portal',
       },
       {
         path: 'keyphrase',
