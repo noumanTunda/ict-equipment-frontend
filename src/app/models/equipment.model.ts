@@ -26,6 +26,8 @@ export interface Equipment {
   supplierDetails: string;
   description: string;
   status: EquipmentStatus;
+  hasWarranty: boolean;
+  warrantyDurationMonths?: number;
   createdAt: string;
   updatedAt: string;
 }
