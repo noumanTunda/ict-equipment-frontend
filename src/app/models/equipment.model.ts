@@ -14,6 +14,8 @@ export type EquipmentStatus =
     | 'HUMAN_RESOURCE_AND_ADMINISTRATION'
     | 'PLANNING_AND_COORDINATION';
 
+export type ItemCondition = 'GOOD' | 'FAIR' | 'DAMAGED' | 'OBSOLETE';
+
 export interface Equipment {
   id: number;
   assetNumber: string;
