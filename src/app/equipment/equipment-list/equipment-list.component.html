@@ -161,6 +161,12 @@
                       Edit
                     </button>
                     <button
+                      class="action-btn edit-btn !bg-amber-500 !hover:bg-amber-600"
+                      (click)="openReInspectModal(item, $event)"
+                    >
+                      Re-Inspect
+                    </button>
+                    <button
                       class="action-btn delete-btn"
                       [disabled]="!(item.status === 'AVAILABLE')"
                       (click)="openDeleteModal(item, $event)"
@@ -542,6 +548,131 @@
             Confirm Delete
           </button>
         </div>
+      </div>
+    </div>
+  }
+
+  <!-- RE-INSPECTION MODAL -->
+  @if (isReInspectModalOpen && selectedEquipment) {
+    <div
+      class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto"
+    >
+      <div
+        class="bg-white rounded-lg shadow-2xl max-w-lg w-full p-6 sm:p-8 space-y-6 relative border border-slate-100 my-8"
+      >
+        <div
+          class="flex items-center justify-between border-b border-slate-100 pb-4"
+        >
+          <div>
+            <p
+              class="text-xs font-bold uppercase text-amber-600 tracking-wider"
+            >
+              Equipment Re-Inspection
+            </p>
+            <h2 class="text-xl font-extrabold text-slate-900">
+              #{{ selectedEquipment.assetNumber }}
+            </h2>
+          </div>
+          <button
+            (click)="closeModals()"
+            class="text-slate-400 hover:text-slate-700 text-2xl font-bold"
+          >
+            &times;
+          </button>
+        </div>
+
+        <form
+          [formGroup]="reInspectForm"
+          (ngSubmit)="submitReInspection()"
+          class="space-y-4"
+        >
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700"
+                >Target Status *</label
+              >
+              <select
+                formControlName="targetStatus"
+                class="form-select text-xs px-3 py-2 rounded border-slate-300 focus:border-[#1394db]"
+              >
+                <option value="AVAILABLE">Available</option>
+                <option value="MAINTENANCE">Maintenance</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700"
+                >Item Condition *</label
+              >
+              <select
+                formControlName="itemCondition"
+                class="form-select text-xs px-3 py-2 rounded border-slate-300 focus:border-[#1394db]"
+              >
+                <option value="GOOD">Good</option>
+                <option value="FAIR">Fair</option>
+                <option value="DAMAGED">Damaged</option>
+                <option value="OBSOLETE">Obsolete</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label text-xs font-bold text-slate-700"
+              >Remarks</label
+            >
+            <textarea
+              formControlName="remarks"
+              rows="2"
+              placeholder="Optional inspection remarks..."
+              class="form-control text-xs px-3 py-2 rounded border-slate-300 focus:border-[#1394db]"
+            ></textarea>
+          </div>
+
+          @if (reInspectForm.get('targetStatus')?.value === 'MAINTENANCE') {
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700"
+                >Maintenance Notes *</label
+              >
+              <textarea
+                formControlName="maintenanceNotes"
+                rows="2"
+                placeholder="Describe maintenance required..."
+                class="form-control text-xs px-3 py-2 rounded border-slate-300 focus:border-[#1394db]"
+              ></textarea>
+            </div>
+
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700"
+                >Estimated Maintenance Cost</label
+              >
+              <input
+                type="number"
+                formControlName="estimatedMaintenanceCost"
+                placeholder="0.00"
+                step="0.01"
+                class="form-control text-xs px-3 py-2 rounded border-slate-300 focus:border-[#1394db]"
+              />
+            </div>
+          }
+
+          <div
+            class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100"
+          >
+            <button
+              type="button"
+              (click)="closeModals()"
+              class="action-btn view-btn !py-2 !px-4"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="isLoading"
+              class="action-btn edit-btn !bg-amber-500 !hover:bg-amber-600 !py-2 !px-5 font-bold disabled:opacity-50"
+            >
+              Submit Re-Inspection
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   }
