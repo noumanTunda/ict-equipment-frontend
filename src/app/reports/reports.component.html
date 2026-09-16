@@ -224,7 +224,7 @@
           </button>
         </div>
 
-        @if (equipmentReportData()) {
+        @if (equipmentReportData(); as equipmentReport) {
           <div class="table-responsive">
             <table class="data-table">
               <thead>
@@ -238,7 +238,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (item of equipmentReportData().content; track item.id) {
+                @for (item of equipmentReport.content; track item.id) {
                   <tr>
                     <td class="id-cell">#{{ item.assetNumber }}</td>
                     <td class="font-mono text-xs">{{ item.serialNumber }}</td>
@@ -418,7 +418,7 @@
           </button>
         </div>
 
-        @if (transactionReportData()) {
+        @if (transactionReportData(); as transactionReport) {
           <div class="table-responsive">
             <table class="data-table">
               <thead>
@@ -431,7 +431,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (item of transactionReportData().content; track item.id) {
+                @for (item of transactionReport.content; track item.id) {
                   <tr>
                     <td class="id-cell">#{{ item.transactionCode }}</td>
                     <td>{{ item.staffName }}</td>
@@ -561,7 +561,7 @@
           </div>
         }
 
-        @if (staffAssetReportData) {
+        @if (staffAssetReportData(); as staffReport) {
           <div class="table-responsive">
             <table class="data-table">
               <thead>
@@ -576,7 +576,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (item of staffAssetReportData.data; track item.id) {
+                @for (item of staffReport.data; track item.id) {
                   <tr>
                     <td class="id-cell">#{{ item.assetNumber }}</td>
                     <td class="font-mono text-xs">{{ item.serialNumber }}</td>
@@ -694,7 +694,7 @@
           </button>
         </div>
 
-        @if (overdueReportData()) {
+        @if (overdueReportData(); as overdueReport) {
           <div class="table-responsive">
             <table class="data-table">
               <thead>
@@ -707,7 +707,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (item of overdueReportData.content; track item.id) {
+                @for (item of overdueReport.content; track item.id) {
                   <tr>
                     <td class="id-cell text-rose-600">#{{ item.transactionCode }}</td>
                     <td>{{ item.staffName }}</td>
