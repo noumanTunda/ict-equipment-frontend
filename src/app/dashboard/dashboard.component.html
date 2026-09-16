@@ -345,6 +345,35 @@
           </a>
 
           <a
+            routerLink="/dashboard/reports"
+            class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all"
+            [ngClass]="
+              isRouteActive('reports')
+                ? 'bg-[#1394db] text-white shadow-sm font-bold'
+                : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+            "
+            [title]="isSidebarCollapsed ? 'Reports Management' : ''"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.8"
+              stroke="currentColor"
+              class="h-4 w-4 shrink-0"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+              />
+            </svg>
+            @if (!isSidebarCollapsed) {
+              <span class="truncate">Reports</span>
+            }
+          </a>
+
+          <a
             routerLink="/dashboard/keyphrase"
             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all"
             [ngClass]="
