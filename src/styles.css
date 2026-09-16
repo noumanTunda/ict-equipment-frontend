@@ -305,6 +305,19 @@ h6 {
   color: #047857;
 }
 
+/* Inspect Button */
+.inspect-btn {
+  color: #059669;
+  background-color: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.inspect-btn:hover {
+  background-color: #d1fae5;
+  color: #047857;
+}
+
+
 /* Footer & Pagination */
 .table-footer {
   display: flex;
