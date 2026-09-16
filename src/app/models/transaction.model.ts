@@ -1,7 +1,7 @@
 import { ApiResponse } from './auth.model';
 import { PaginatedPayload } from './equipment.model';
 
-export type TransactionStatus = 'PENDING_SIGNATURE' | 'COMPLETED' | 'CANCELLED';
+export type TransactionStatus = 'DRAFT' | 'PENDING_SIGNATURE' | 'COMPLETED' | 'CANCELLED';
 export type ReturnCondition = 'GOOD' | 'FAIR' | 'DAMAGED' | 'OBSOLETE';
 
 export interface IssuedItem {
