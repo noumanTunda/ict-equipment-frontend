@@ -1,0 +1,755 @@
+<div class="p-4 sm:p-6 max-w-screen-2xl mx-auto">
+  <div class="table-card">
+    <!-- Table Header Controls -->
+    <div class="table-header">
+      <div class="table-title">
+        <h2>Reports Management</h2>
+        <p>
+          Generate and download equipment, transaction, and staff asset reports
+          in various formats.
+        </p>
+      </div>
+    </div>
+
+    <!-- Report Type Tabs -->
+    <div class="flex flex-wrap gap-2 mb-6 pb-4 border-b border-slate-100">
+      <button
+        (click)="selectedReportType.set('equipment')"
+        [ngClass]="
+          selectedReportType() === 'equipment'
+            ? 'tab-btn active'
+            : 'tab-btn'
+        "
+        class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+      >
+        Equipment Reports
+      </button>
+      <button
+        (click)="selectedReportType.set('transaction')"
+        [ngClass]="
+          selectedReportType() === 'transaction'
+            ? 'tab-btn active'
+            : 'tab-btn'
+        "
+        class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+      >
+        Transaction Reports
+      </button>
+      <button
+        (click)="selectedReportType.set('staff')"
+        [ngClass]="
+          selectedReportType() === 'staff'
+            ? 'tab-btn active'
+            : 'tab-btn'
+        "
+        class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+      >
+        Staff Asset Reports
+      </button>
+      <button
+        (click)="selectedReportType.set('overdue')"
+        [ngClass]="
+          selectedReportType() === 'overdue'
+            ? 'tab-btn active'
+            : 'tab-btn'
+        "
+        class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+      >
+        Overdue Transactions
+      </button>
+    </div>
+
+    <!-- Equipment Reports Section -->
+    @if (selectedReportType() === 'equipment') {
+      <div class="space-y-4">
+        <div class="bg-slate-50 rounded-lg p-4 border border-slate-100">
+          <h3 class="text-sm font-bold text-slate-900 mb-3">Filter Options</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700"
+                >Start Date</label
+              >
+              <input
+                type="datetime-local"
+                [ngModel]="equipmentFilters.startDate"
+                (ngModelChange)="equipmentFilters.startDate = $event"
+                class="form-control text-xs px-3 py-2 rounded border-slate-300"
+              />
+            </div>
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700"
+                >End Date</label
+              >
+              <input
+                type="datetime-local"
+                [ngModel]="equipmentFilters.endDate"
+                (ngModelChange)="equipmentFilters.endDate = $event"
+                class="form-control text-xs px-3 py-2 rounded border-slate-300"
+              />
+            </div>
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700"
+                >Department</label
+              >
+              <select
+                [ngModel]="equipmentFilters.department"
+                (ngModelChange)="equipmentFilters.department = $event"
+                class="form-select text-xs px-3 py-2 rounded border-slate-300"
+              >
+                <option value="">All Departments</option>
+                @for (dept of departments; track dept) {
+                  <option [value]="dept">{{ dept }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700"
+                >Equipment Category</label
+              >
+              <input
+                type="text"
+                [ngModel]="equipmentFilters.equipmentCategory"
+                (ngModelChange)="equipmentFilters.equipmentCategory = $event"
+                placeholder="e.g., Laptop, Desktop"
+                class="form-control text-xs px-3 py-2 rounded border-slate-300"
+              />
+            </div>
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700"
+                >Status</label
+              >
+              <select
+                [ngModel]="equipmentFilters.equipmentStatus"
+                (ngModelChange)="equipmentFilters.equipmentStatus = $event"
+                class="form-select text-xs px-3 py-2 rounded border-slate-300"
+              >
+                <option value="">All Statuses</option>
+                @for (status of equipmentStatuses; track status) {
+                  <option [value]="status">{{ status }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700"
+                >Has Warranty</label
+              >
+              <select
+                [ngModel]="equipmentFilters.hasWarranty"
+                (ngModelChange)="equipmentFilters.hasWarranty = $event"
+                class="form-select text-xs px-3 py-2 rounded border-slate-300"
+              >
+                <option value="">All</option>
+                <option [value]="true">Yes</option>
+                <option [value]="false">No</option>
+              </select>
+            </div>
+            <div class="sm:col-span-2 lg:col-span-3">
+              <label class="form-label text-xs font-bold text-slate-700"
+                >Search Query</label
+              >
+              <input
+                type="text"
+                [ngModel]="equipmentFilters.searchQuery"
+                (ngModelChange)="equipmentFilters.searchQuery = $event"
+                placeholder="Search by asset number or serial number"
+                class="form-control text-xs px-3 py-2 rounded border-slate-300 w-full"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-3">
+          <button
+            (click)="generateEquipmentReport('json')"
+            [disabled]="isLoading"
+            class="action-btn edit-btn !py-2 !px-4 font-bold disabled:opacity-50"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="h-4 w-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5A3.375 3.375 0 0 0 10.125 2.25H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+              />
+            </svg>
+            Generate JSON Report
+          </button>
+          <button
+            (click)="generateEquipmentReport('csv')"
+            [disabled]="isLoading"
+            class="action-btn view-btn !py-2 !px-4 font-bold disabled:opacity-50"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="h-4 w-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+              />
+            </svg>
+            Download CSV
+          </button>
+          <button
+            (click)="generateEquipmentReport('pdf')"
+            [disabled]="isLoading"
+            class="action-btn view-btn !py-2 !px-4 font-bold disabled:opacity-50"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="h-4 w-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+              />
+            </svg>
+            Download PDF
+          </button>
+        </div>
+
+        @if (equipmentReportData()) {
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Asset No.</th>
+                  <th>Serial No.</th>
+                  <th>Equipment & Model</th>
+                  <th>Department</th>
+                  <th>Status</th>
+                  <th>Warranty</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of equipmentReportData().content; track item.id) {
+                  <tr>
+                    <td class="id-cell">#{{ item.assetNumber }}</td>
+                    <td class="font-mono text-xs">{{ item.serialNumber }}</td>
+                    <td class="font-medium">
+                      <div>{{ item.brandModel }}</div>
+                      <div class="text-[11px] text-slate-400">
+                        {{ item.equipmentType }}
+                      </div>
+                    </td>
+                    <td>{{ item.department }}</td>
+                    <td>
+                      <span [ngClass]="getStatusClass(item.status)">
+                        <span class="status-dot"></span>
+                        {{ item.status }}
+                      </span>
+                    </td>
+                    <td>
+                      @if (item.hasWarranty) {
+                        <span class="text-emerald-600 font-semibold text-xs">
+                          Yes ({{ item.warrantyDurationMonths }} mo)
+                        </span>
+                      } @else {
+                        <span class="text-slate-400 text-xs">No</span>
+                      }
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="6" class="empty-state">
+                      No equipment data found matching your criteria.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Transaction Reports Section -->
+    @if (selectedReportType() === 'transaction') {
+      <div class="space-y-4">
+        <div class="bg-slate-50 rounded-lg p-4 border border-slate-100">
+          <h3 class="text-sm font-bold text-slate-900 mb-3">Filter Options</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700"
+                >Start Date</label
+              >
+              <input
+                type="datetime-local"
+                [ngModel]="transactionFilters.startDate"
+                (ngModelChange)="transactionFilters.startDate = $event"
+                class="form-control text-xs px-3 py-2 rounded border-slate-300"
+              />
+            </div>
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700"
+                >End Date</label
+              >
+              <input
+                type="datetime-local"
+                [ngModel]="transactionFilters.endDate"
+                (ngModelChange)="transactionFilters.endDate = $event"
+                class="form-control text-xs px-3 py-2 rounded border-slate-300"
+              />
+            </div>
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700"
+                >Transaction Status</label
+              >
+              <select
+                [ngModel]="transactionFilters.transactionStatus"
+                (ngModelChange)="transactionFilters.transactionStatus = $event"
+                class="form-select text-xs px-3 py-2 rounded border-slate-300"
+              >
+                <option value="">All Statuses</option>
+                @for (status of transactionStatuses; track status) {
+                  <option [value]="status">{{ status }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700"
+                >Item Condition</label
+              >
+              <select
+                [ngModel]="transactionFilters.itemCondition"
+                (ngModelChange)="transactionFilters.itemCondition = $event"
+                class="form-select text-xs px-3 py-2 rounded border-slate-300"
+              >
+                <option value="">All Conditions</option>
+                @for (condition of itemConditions; track condition) {
+                  <option [value]="condition">{{ condition }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700"
+                >Overdue Threshold (Days)</label
+              >
+              <input
+                type="number"
+                [ngModel]="transactionFilters.overdueThresholdDays"
+                (ngModelChange)="transactionFilters.overdueThresholdDays = $event"
+                placeholder="30"
+                class="form-control text-xs px-3 py-2 rounded border-slate-300"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-3">
+          <button
+            (click)="generateTransactionReport('json')"
+            [disabled]="isLoading"
+            class="action-btn edit-btn !py-2 !px-4 font-bold disabled:opacity-50"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="h-4 w-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5A3.375 3.375 0 0 0 10.125 2.25H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+              />
+            </svg>
+            Generate JSON Report
+          </button>
+          <button
+            (click)="generateTransactionReport('csv')"
+            [disabled]="isLoading"
+            class="action-btn view-btn !py-2 !px-4 font-bold disabled:opacity-50"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="h-4 w-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+              />
+            </svg>
+            Download CSV
+          </button>
+          <button
+            (click)="generateTransactionReport('pdf')"
+            [disabled]="isLoading"
+            class="action-btn view-btn !py-2 !px-4 font-bold disabled:opacity-50"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="h-4 w-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+              />
+            </svg>
+            Download PDF
+          </button>
+        </div>
+
+        @if (transactionReportData()) {
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Transaction Code</th>
+                  <th>Staff Name</th>
+                  <th>Issuing Officer</th>
+                  <th>Status</th>
+                  <th>Signatures</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of transactionReportData().content; track item.id) {
+                  <tr>
+                    <td class="id-cell">#{{ item.transactionCode }}</td>
+                    <td>{{ item.staffName }}</td>
+                    <td>{{ item.issuingOfficerName }}</td>
+                    <td>
+                      <span
+                        [ngClass]="
+                          item.status === 'COMPLETED'
+                            ? 'status-indicator completed'
+                            : item.status === 'PENDING_SIGNATURE'
+                              ? 'status-indicator pending'
+                              : 'status-indicator danger'
+                        "
+                      >
+                        <span class="status-dot"></span>
+                        {{ item.status.replace('_', ' ') }}
+                      </span>
+                    </td>
+                    <td class="text-[11px] font-semibold">
+                      <span
+                        [ngClass]="
+                          item.employeeSigned
+                            ? 'text-emerald-600'
+                            : 'text-slate-400'
+                        "
+                        >Staff</span
+                      >
+                      <span class="mx-1 text-slate-300">|</span>
+                      <span
+                        [ngClass]="
+                          item.officerSigned
+                            ? 'text-emerald-600'
+                            : 'text-slate-400'
+                        "
+                        >Officer</span
+                      >
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="empty-state">
+                      No transaction data found matching your criteria.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Staff Asset Reports Section -->
+    @if (selectedReportType() === 'staff') {
+      <div class="space-y-4">
+        <div class="bg-slate-50 rounded-lg p-4 border border-slate-100">
+          <h3 class="text-sm font-bold text-slate-900 mb-3">Select Staff Member</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700"
+                >Staff ID</label
+              >
+              <input
+                type="number"
+                [ngModel]="selectedStaffId()"
+                (ngModelChange)="selectedStaffId.set($event)"
+                placeholder="Enter staff ID"
+                class="form-control text-xs px-3 py-2 rounded border-slate-300"
+              />
+            </div>
+            <div class="flex items-end">
+              <button
+                (click)="generateStaffReport('json')"
+                [disabled]="isLoading || !selectedStaffId()"
+                class="action-btn edit-btn !py-2 !px-4 font-bold disabled:opacity-50"
+              >
+                Load Staff Assets
+              </button>
+            </div>
+          </div>
+        </div>
+
+        @if (selectedStaffId()) {
+          <div class="flex flex-wrap gap-3">
+            <button
+              (click)="generateStaffReport('csv')"
+              [disabled]="isLoading"
+              class="action-btn view-btn !py-2 !px-4 font-bold disabled:opacity-50"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                class="h-4 w-4"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+                />
+              </svg>
+              Download CSV
+            </button>
+            <button
+              (click)="generateStaffReport('pdf')"
+              [disabled]="isLoading"
+              class="action-btn view-btn !py-2 !px-4 font-bold disabled:opacity-50"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                class="h-4 w-4"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+                />
+              </svg>
+              Download PDF
+            </button>
+          </div>
+        }
+
+        @if (staffAssetReportData) {
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Asset No.</th>
+                  <th>Serial No.</th>
+                  <th>Equipment Type</th>
+                  <th>Status</th>
+                  <th>Issued Date</th>
+                  <th>Returned Date</th>
+                  <th>Transaction Code</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of staffAssetReportData.data; track item.id) {
+                  <tr>
+                    <td class="id-cell">#{{ item.assetNumber }}</td>
+                    <td class="font-mono text-xs">{{ item.serialNumber }}</td>
+                    <td>{{ item.equipmentType }}</td>
+                    <td>
+                      <span [ngClass]="getStatusClass(item.status)">
+                        <span class="status-dot"></span>
+                        {{ item.status }}
+                      </span>
+                    </td>
+                    <td class="text-xs">{{ item.issuedAt | date:'short' }}</td>
+                    <td class="text-xs">
+                      {{ item.returnedAt ? (item.returnedAt | date:'short') : 'N/A' }}
+                    </td>
+                    <td class="id-cell">#{{ item.transactionCode }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="7" class="empty-state">
+                      No assets found for this staff member.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Overdue Transactions Section -->
+    @if (selectedReportType() === 'overdue') {
+      <div class="space-y-4">
+        <div class="bg-slate-50 rounded-lg p-4 border border-slate-100">
+          <h3 class="text-sm font-bold text-slate-900 mb-3">Filter Options</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="form-label text-xs font-bold text-slate-700"
+                >Overdue Threshold (Days)</label
+              >
+              <input
+                type="number"
+                [ngModel]="overdueThresholdDays"
+                (ngModelChange)="overdueThresholdDays = $event"
+                placeholder="30"
+                class="form-control text-xs px-3 py-2 rounded border-slate-300"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-3">
+          <button
+            (click)="generateOverdueReport('json')"
+            [disabled]="isLoading"
+            class="action-btn edit-btn !py-2 !px-4 font-bold disabled:opacity-50"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="h-4 w-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5A3.375 3.375 0 0 0 10.125 2.25H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+              />
+            </svg>
+            Generate JSON Report
+          </button>
+          <button
+            (click)="generateOverdueReport('csv')"
+            [disabled]="isLoading"
+            class="action-btn view-btn !py-2 !px-4 font-bold disabled:opacity-50"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="h-4 w-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+              />
+            </svg>
+            Download CSV
+          </button>
+          <button
+            (click)="generateOverdueReport('pdf')"
+            [disabled]="isLoading"
+            class="action-btn view-btn !py-2 !px-4 font-bold disabled:opacity-50"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="h-4 w-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+              />
+            </svg>
+            Download PDF
+          </button>
+        </div>
+
+        @if (overdueReportData()) {
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Transaction Code</th>
+                  <th>Staff Name</th>
+                  <th>Issuing Officer</th>
+                  <th>Status</th>
+                  <th>Signatures</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of overdueReportData.content; track item.id) {
+                  <tr>
+                    <td class="id-cell text-rose-600">#{{ item.transactionCode }}</td>
+                    <td>{{ item.staffName }}</td>
+                    <td>{{ item.issuingOfficerName }}</td>
+                    <td>
+                      <span class="status-indicator danger">
+                        <span class="status-dot"></span>
+                        {{ item.status.replace('_', ' ') }}
+                      </span>
+                    </td>
+                    <td class="text-[11px] font-semibold">
+                      <span
+                        [ngClass]="
+                          item.employeeSigned
+                            ? 'text-emerald-600'
+                            : 'text-slate-400'
+                        "
+                        >Staff</span
+                      >
+                      <span class="mx-1 text-slate-300">|</span>
+                      <span
+                        [ngClass]="
+                          item.officerSigned
+                            ? 'text-emerald-600'
+                            : 'text-slate-400'
+                        "
+                        >Officer</span
+                      >
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="empty-state">
+                      No overdue transactions found.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
