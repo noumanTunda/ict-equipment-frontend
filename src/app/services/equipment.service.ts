@@ -6,6 +6,7 @@ import {
   CreateEquipmentDto,
   Equipment,
   PaginatedPayload,
+  ReInspectionDto,
   UpdateEquipmentDto,
 } from '../models/equipment.model';
 import { environment } from '../../environments/environment';
@@ -81,5 +82,11 @@ export class EquipmentService {
     return this.http
       .delete<ApiResponse<void>>(`${this.baseUrl}/${id}`)
       .pipe(map(() => void 0));
+  }
+
+  reInspectEquipment(id: number, data: ReInspectionDto): Observable<Equipment> {
+    return this.http
+      .post<ApiResponse<Equipment>>(`${this.baseUrl}/${id}/reinspect`, data)
+      .pipe(map((res) => res.payload));
   }
 }
