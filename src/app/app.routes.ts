@@ -39,18 +39,6 @@ export const routes: Routes = [
     title: 'Forgot Password | ICT Equipment Portal',
   },
   {
-    path: 'keyphrase',
-    component: KeyphraseComponent,
-    canActivate: [AuthGuard.canActivate],
-    title: 'Keyphrase Management | ICT Equipment Portal',
-  },
-  {
-    path: 'change-password',
-    component: ChangePasswordComponent,
-    canActivate: [AuthGuard.canActivate],
-    title: 'Change Password | ICT Equipment Portal',
-  },
-  {
     path: 'dashboard',
     component: DashboardComponent,
     canActivate: [AuthGuard.canActivate],
@@ -70,6 +58,16 @@ export const routes: Routes = [
         path: 'transactions',
         component: TransactionListComponent,
         title: 'Equipment Transactions | ICT Equipment Portal',
+      },
+      {
+        path: 'keyphrase',
+        component: KeyphraseComponent,
+        title: 'Keyphrase Management | ICT Equipment Portal',
+      },
+      {
+        path: 'change-password',
+        component: ChangePasswordComponent,
+        title: 'Change Password | ICT Equipment Portal',
       },
     ],
   },
