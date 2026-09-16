@@ -41,6 +41,8 @@ export interface CreateEquipmentDto {
   supplierDetails: string;
   description: string;
   status: EquipmentStatus;
+  hasWarranty: boolean;
+  warrantyDurationMonths?: number;
 }
 
 export interface UpdateEquipmentDto {
@@ -52,6 +54,8 @@ export interface UpdateEquipmentDto {
   supplierDetails: string;
   description: string;
   status: EquipmentStatus;
+  hasWarranty: boolean;
+  warrantyDurationMonths?: number;
 }
 
 export interface PageableInfo {

@@ -12,7 +12,7 @@ import { EquipmentService } from '../../services/equipment.service';
 import { TransactionService } from '../../services/transaction.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
-import { Equipment, EquipmentStatus } from '../../models/equipment.model';
+import { CreateEquipmentDto, Equipment, EquipmentStatus } from '../../models/equipment.model';
 import { User } from '../../models/auth.model';
 import { EquipmentTransaction } from '../../models/transaction.model';
 
@@ -129,7 +129,15 @@ export class EquipmentListComponent implements OnInit {
       description: ['', [Validators.required]],
       status: ['AVAILABLE' as EquipmentStatus, [Validators.required]],
       department: ['ICT' as EquipmentDepartment, [Validators.required]],
+      hasWarranty: [false],
+      warrantyDurationMonths: [null as number | null],
     });
+
+    this.equipmentForm
+      .get('hasWarranty')
+      ?.valueChanges.subscribe((hasWarranty: boolean) =>
+        this.syncWarrantyValidators(!!hasWarranty),
+      );
 
     this.reInspectForm = this.fb.group({
       targetStatus: ['AVAILABLE' as 'AVAILABLE' | 'MAINTENANCE', [Validators.required]],
@@ -138,6 +146,28 @@ export class EquipmentListComponent implements OnInit {
       maintenanceNotes: [''],
       estimatedMaintenanceCost: [null as number | null],
     });
+  }
+
+  get hasWarrantySelected(): boolean {
+    return this.equipmentForm?.get('hasWarranty')?.value === true;
+  }
+
+  get warrantyDurationControl() {
+    return this.equipmentForm?.get('warrantyDurationMonths');
+  }
+
+  /**Set WarrantyDuration if Equipment Has Warranty*/
+  private syncWarrantyValidators(hasWarranty: boolean): void {
+    const durationControl = this.equipmentForm.get('warrantyDurationMonths');
+    if (!durationControl) return;
+
+    if (hasWarranty) {
+      durationControl.setValidators([Validators.required, Validators.min(1)]);
+    } else {
+      durationControl.clearValidators();
+      durationControl.setValue(null, { emitEvent: false });
+    }
+    durationControl.updateValueAndValidity({ emitEvent: false });
   }
 
   loadEquipment(): void {
@@ -292,6 +322,8 @@ export class EquipmentListComponent implements OnInit {
     this.equipmentForm.reset({
       equipmentType: 'LAPTOP',
       status: 'AVAILABLE',
+      hasWarranty: false,
+      warrantyDurationMonths: null,
     });
     this.equipmentForm.get('assetNumber')?.enable();
     this.equipmentForm.get('serialNumber')?.enable();
@@ -310,6 +342,10 @@ export class EquipmentListComponent implements OnInit {
       description: item.description,
       department: item.department,
       status: item.status,
+      hasWarranty: item.hasWarranty ?? false,
+      warrantyDurationMonths: item.hasWarranty
+        ? (item.warrantyDurationMonths ?? null)
+        : null,
     });
 
     if (item.status === 'ISSUED') {
@@ -364,10 +400,17 @@ export class EquipmentListComponent implements OnInit {
     }
 
     const formRaw = this.equipmentForm.getRawValue();
+    const payload: CreateEquipmentDto = {
+      ...formRaw,
+      hasWarranty: !!formRaw.hasWarranty,
+      warrantyDurationMonths: formRaw.hasWarranty
+        ? Number(formRaw.warrantyDurationMonths)
+        : undefined,
+    };
     this.isLoading = true;
 
     if (this.isCreateModalOpen) {
-      this.equipmentService.createEquipment(formRaw).subscribe({
+      this.equipmentService.createEquipment(payload).subscribe({
         next: (created: Equipment) => {
           this.isLoading = false;
           this.closeModals();
@@ -385,7 +428,7 @@ export class EquipmentListComponent implements OnInit {
       });
     } else if (this.isEditModalOpen && this.selectedEquipment) {
       this.equipmentService
-        .updateEquipment(this.selectedEquipment.id, formRaw)
+        .updateEquipment(this.selectedEquipment.id, payload)
         .subscribe({
           next: (updated: Equipment) => {
             this.isLoading = false;
