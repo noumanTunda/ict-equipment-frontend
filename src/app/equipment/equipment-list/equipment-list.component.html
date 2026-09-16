@@ -160,12 +160,14 @@
                     >
                       Edit
                     </button>
-                    <button
-                      class="action-btn edit-btn !bg-amber-500 !hover:bg-amber-600"
-                      (click)="openReInspectModal(item, $event)"
-                    >
-                      Re-Inspect
-                    </button>
+                    @if (item.status === 'RETURNED') {
+                      <button
+                        class="action-btn inspect-btn"
+                        (click)="openReInspectModal(item, $event)"
+                      >
+                        Inspect
+                      </button>
+                    }
                     <button
                       class="action-btn delete-btn"
                       [disabled]="!(item.status === 'AVAILABLE')"
