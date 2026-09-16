@@ -1,4 +1,4 @@
-import { EquipmentDepartment } from '../../models/equipment.model';
+import { EquipmentDepartment, ReInspectionDto } from '../../models/equipment.model';
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -96,9 +96,11 @@ export class EquipmentListComponent implements OnInit {
   isEditModalOpen = false;
   isDeleteModalOpen = false;
   isDetailModalOpen = false;
+  isReInspectModalOpen = false;
   selectedEquipment: Equipment | null = null;
 
   equipmentForm!: FormGroup;
+  reInspectForm!: FormGroup;
 
   ngOnInit(): void {
     this.currentUser = this.authService.getUser();
@@ -127,6 +129,14 @@ export class EquipmentListComponent implements OnInit {
       description: ['', [Validators.required]],
       status: ['AVAILABLE' as EquipmentStatus, [Validators.required]],
       department: ['ICT' as EquipmentDepartment, [Validators.required]],
+    });
+
+    this.reInspectForm = this.fb.group({
+      targetStatus: ['AVAILABLE' as 'AVAILABLE' | 'MAINTENANCE', [Validators.required]],
+      itemCondition: ['GOOD' as 'GOOD' | 'FAIR' | 'DAMAGED' | 'OBSOLETE', [Validators.required]],
+      remarks: [''],
+      maintenanceNotes: [''],
+      estimatedMaintenanceCost: [null as number | null],
     });
   }
 
@@ -325,11 +335,25 @@ export class EquipmentListComponent implements OnInit {
     this.isDeleteModalOpen = true;
   }
 
+  openReInspectModal(item: Equipment, event?: Event): void {
+    event?.stopPropagation();
+    this.selectedEquipment = item;
+    this.reInspectForm.reset({
+      targetStatus: 'AVAILABLE',
+      itemCondition: 'GOOD',
+      remarks: '',
+      maintenanceNotes: '',
+      estimatedMaintenanceCost: null,
+    });
+    this.isReInspectModalOpen = true;
+  }
+
   closeModals(): void {
     this.isCreateModalOpen = false;
     this.isEditModalOpen = false;
     this.isDeleteModalOpen = false;
     this.isDetailModalOpen = false;
+    this.isReInspectModalOpen = false;
     this.selectedEquipment = null;
   }
 
@@ -411,6 +435,50 @@ export class EquipmentListComponent implements OnInit {
     });
   }
 
+  submitReInspection(): void {
+    if (!this.selectedEquipment || this.reInspectForm.invalid) {
+      this.reInspectForm.markAllAsTouched();
+      return;
+    }
+
+    const formRaw = this.reInspectForm.getRawValue();
+    const targetStatus = formRaw.targetStatus;
+
+    if (targetStatus === 'MAINTENANCE' && !formRaw.maintenanceNotes) {
+      this.toastService.warning(
+        'Validation Error',
+        'Maintenance notes are required when target status is Maintenance.',
+      );
+      return;
+    }
+
+    const reInspectionDto: ReInspectionDto = {
+      targetStatus: formRaw.targetStatus,
+      itemCondition: formRaw.itemCondition,
+      remarks: formRaw.remarks || undefined,
+      maintenanceNotes: targetStatus === 'MAINTENANCE' ? formRaw.maintenanceNotes : undefined,
+      estimatedMaintenanceCost: formRaw.estimatedMaintenanceCost || undefined,
+    };
+
+    this.isLoading = true;
+    this.equipmentService.reInspectEquipment(this.selectedEquipment.id, reInspectionDto).subscribe({
+      next: (updated: Equipment) => {
+        this.isLoading = false;
+        this.closeModals();
+        this.toastService.success(
+          'Re-Inspection Completed',
+          `Asset ${updated.assetNumber} has been re-inspected and status updated to ${updated.status}.`,
+        );
+        this.loadEquipment();
+      },
+      error: (err: any) => {
+        this.isLoading = false;
+        const msg = this.authService.getErrorMessage(err);
+        this.toastService.error('Error During Re-Inspection', msg);
+      },
+    });
+  }
+
   getStatusClass(status: EquipmentStatus): string {
     switch (this.normalizeStatus(status)) {
       case 'AVAILABLE':
@@ -451,6 +519,7 @@ export class EquipmentListComponent implements OnInit {
           description:
             issuedItem.accessoriesProvided || 'Issued through transaction',
           status: 'ISSUED',
+          hasWarranty: false,
           createdAt: transaction.createdAt,
           updatedAt: transaction.updatedAt,
         });
