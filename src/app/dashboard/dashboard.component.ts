@@ -338,7 +338,7 @@ export class DashboardComponent implements OnInit {
       // Matches exact '/dashboard' or '/dashboard/' root path only
       return currentUrl === '/dashboard' || currentUrl === '/dashboard/';
     }
-    // For sub-routes like 'requests', 'transactions', 'equipment'
+    // For sub-routes like 'requests', 'transactions', 'equipment', 'keyphrase', 'change-password'
     return currentUrl.includes(`/dashboard/${path}`);
   }
 
