@@ -730,8 +730,8 @@
                   track item.assetNumber
                 ) {
                   <li>
-                    <span class="font-bold">{{ item.assetNumber }}</span> -
-                    Condition: {{ item.itemCondition || "N/A" }}
+                    <span class="font-bold">{{ item.assetNumber }}</span>
+                    ({{ item.equipmentType || "Equipment" }}) - Condition: {{ item.itemCondition || "N/A" }}
                   </li>
                 }
               </ul>
