@@ -651,6 +651,7 @@ export class RequestListComponent implements OnInit {
                 supplierDetails: '',
                 description: '',
                 status: 'ISSUED',
+                hasWarranty: false,
                 createdAt: '',
                 updatedAt: '',
               } as Equipment;
