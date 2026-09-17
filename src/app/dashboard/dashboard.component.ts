@@ -112,12 +112,15 @@ export class DashboardComponent implements OnInit {
         const pendingRequests = requestItems.filter(
           (item) => item.status === 'PENDING',
         ).length;
+        console.log('Pending Requests:', pendingRequests); //debug
         const approvedRequests = requestItems.filter(
           (item) => item.status === 'APPROVED',
         ).length;
+        console.log('Approved Requests:', approvedRequests); //debug
         const completedRequests = requestItems.filter(
           (item) => item.status === 'COMPLETED',
         ).length;
+        console.log('Completed Requests:', completedRequests); //debug
 
         this.dashboardCards.set([
           {
@@ -159,12 +162,189 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  // private loadOfficerDashboard(): void {
+  //   this.isLoadingDashboard = true;
+  //   this.dashboardError = '';
+  //
+  //   forkJoin({
+  //     equipment: this.equipmentService.getAllEquipment(),
+  //     pendingRequests: this.requestService.getRequestsByStatus(
+  //       'PENDING',
+  //       0,
+  //       1,
+  //       'id,desc',
+  //     ),
+  //     approvedRequests: this.requestService.getRequestsByStatus(
+  //       'APPROVED',
+  //       0,
+  //       1,
+  //       'id,desc',
+  //     ),
+  //     rejectedRequests: this.requestService.getRequestsByStatus(
+  //       'REJECTED',
+  //       0,
+  //       1,
+  //       'id,desc',
+  //     ),
+  //     completedRequests: this.requestService.getRequestsByStatus(
+  //       'COMPLETED',
+  //       0,
+  //       1,
+  //       'id,desc',
+  //     ),
+  //     recentPendingRequests: this.requestService.getRequestsByStatus(
+  //       'PENDING',
+  //       0,
+  //       5,
+  //       'id,desc',
+  //     ),
+  //     recentTransactions: this.transactionService.getTransactions({
+  //       page: 0,
+  //       size: 5,
+  //       sort: 'id,desc',
+  //     }).pipe(
+  //       catchError(() => of({ content: [], pageable: { totalElements: 0, totalPages: 0, pageSize: 5, pageNumber: 0 } }))
+  //     ),
+  //     pendingTransactions: this.transactionService.getTransactions({
+  //       status: 'PENDING_SIGNATURE',
+  //       page: 0,
+  //       size: 1,
+  //       sort: 'id,desc',
+  //     }).pipe(
+  //       catchError(() => of({ content: [], pageable: { totalElements: 0, totalPages: 0, pageSize: 1, pageNumber: 0 } }))
+  //     ),
+  //     completedTransactions: this.transactionService.getTransactions({
+  //       status: 'COMPLETED',
+  //       page: 0,
+  //       size: 1,
+  //       sort: 'id,desc',
+  //     }).pipe(
+  //       catchError(() => of({ content: [], pageable: { totalElements: 0, totalPages: 0, pageSize: 1, pageNumber: 0 } }))
+  //     ),
+  //   }).subscribe({
+  //     next: ({
+  //              equipment,
+  //              pendingRequests,
+  //              approvedRequests,
+  //              rejectedRequests,
+  //              completedRequests,
+  //              recentPendingRequests,
+  //              recentTransactions,
+  //              pendingTransactions,
+  //              completedTransactions,
+  //            }) => {
+  //       const availableEquipment = equipment.filter(
+  //         (item) => item.status === 'AVAILABLE',
+  //       );
+  //       const issuedEquipment = equipment.filter(
+  //         (item) => item.status === 'ISSUED',
+  //       );
+  //       const maintenanceEquipment = equipment.filter(
+  //         (item) => item.status === 'MAINTENANCE',
+  //       );
+  //       const returnedEquipment = equipment.filter(
+  //         (item) => item.status === 'RETURNED',
+  //       );
+  //       const disposedEquipment = equipment.filter(
+  //         (item) => item.status === 'DISPOSED',
+  //       );
+  //       const pendingRequestCount = pendingRequests.pageable?.totalElements ?? 0;
+  //       const requestResolutionCount =
+  //         (approvedRequests.pageable?.totalElements ?? 0) +
+  //         (rejectedRequests.pageable?.totalElements ?? 0) +
+  //         (completedRequests.pageable?.totalElements ?? 0);
+  //       const pendingTransactionCount =
+  //         pendingTransactions.pageable?.totalElements ?? 0;
+  //       const completedTransactionCount =
+  //         completedTransactions.pageable?.totalElements ?? 0;
+  //
+  //       // Logging pending requests count & full payload
+  //       console.log('Officer Dashboard - Pending Requests Count:', pendingRequestCount);
+  //       console.log('Officer Dashboard - Pending Requests Payload:', pendingRequests);
+  //
+  //       // Logging resolved requests count & individual breakdowns
+  //       console.log('Officer Dashboard - Requests Resolved Total:', requestResolutionCount);
+  //       console.log('Officer Dashboard - Resolved Breakdown:', {
+  //         approved: approvedRequests.pageable?.totalElements,
+  //         rejected: rejectedRequests.pageable?.totalElements,
+  //         completed: completedRequests.pageable?.totalElements,
+  //       });
+  //
+  //       this.inventorySummary.set(equipment);
+  //       this.dashboardCards.set([
+  //         {
+  //           label: 'Total Equipment',
+  //           value: String(equipment.length),
+  //           note: 'Registered assets across the inventory.',
+  //           tone: 'blue',
+  //         },
+  //         {
+  //           label: 'Available Equipment',
+  //           value: String(availableEquipment.length),
+  //           note: 'Ready for issuing to staff.',
+  //           tone: 'emerald',
+  //         },
+  //         {
+  //           label: 'Issued Equipment',
+  //           value: String(issuedEquipment.length),
+  //           note: 'Currently assigned assets.',
+  //           tone: 'amber',
+  //         },
+  //         {
+  //           label: 'Equipment in Maintenance',
+  //           value: String(maintenanceEquipment.length),
+  //           note: 'Currently In Maintanance.',
+  //           tone: 'rose',
+  //         },
+  //         {
+  //           label: 'Disposed Equipment',
+  //           value: String(disposedEquipment.length),
+  //           note: 'Currently Disposed assets.',
+  //           tone: 'slate',
+  //         },
+  //         {
+  //           label: 'Returned Equipment',
+  //           value: String(returnedEquipment.length),
+  //           note: 'Currently returned assets.',
+  //           tone: 'emerald',
+  //         },
+  //         {
+  //           label: 'Pending Requests',
+  //           value: String(pendingRequestCount),
+  //           note: 'Requests waiting for review.',
+  //           tone: 'rose',
+  //         },
+  //         {
+  //           label: 'Requests Resolved',
+  //           value: String(requestResolutionCount),
+  //           note: `Transactions awaiting signature: ${pendingTransactionCount}. Completed: ${completedTransactionCount}.`,
+  //           tone: 'slate',
+  //         },
+  //       ]);
+  //
+  //       this.recentRequests.set(
+  //         (recentPendingRequests.content || []).slice(0, 5),
+  //       );
+  //       this.recentTransactions.set(
+  //         (recentTransactions.content || []).slice(0, 5),
+  //       );
+  //
+  //       this.isLoadingDashboard = false;
+  //     },
+  //     error: () => {
+  //       this.dashboardError = 'Failed to load operations dashboard data.';
+  //       this.isLoadingDashboard = false;
+  //     },
+  //   });
+  // }
+
+
   private loadOfficerDashboard(): void {
     this.isLoadingDashboard = true;
     this.dashboardError = '';
 
     forkJoin({
-      equipment: this.equipmentService.getAllEquipment(),
+      equipmentRes: this.equipmentService.getAllEquipment(),
       pendingRequests: this.requestService.getRequestsByStatus(
         'PENDING',
         0,
@@ -200,7 +380,7 @@ export class DashboardComponent implements OnInit {
         size: 5,
         sort: 'id,desc',
       }).pipe(
-        catchError(() => of({ content: [], pageable: { totalElements: 0, totalPages: 0, pageSize: 5, pageNumber: 0 } }))
+        catchError(() => of({ payload: { content: [], pageable: { totalElements: 0, totalPages: 0, pageNumber: 0, pageSize: 5 } } } as any))
       ),
       pendingTransactions: this.transactionService.getTransactions({
         status: 'PENDING_SIGNATURE',
@@ -208,7 +388,7 @@ export class DashboardComponent implements OnInit {
         size: 1,
         sort: 'id,desc',
       }).pipe(
-        catchError(() => of({ content: [], pageable: { totalElements: 0, totalPages: 0, pageSize: 1, pageNumber: 0 } }))
+        catchError(() => of({ payload: { content: [], pageable: { totalElements: 0, totalPages: 0, pageNumber: 0, pageSize: 1 } } } as any))
       ),
       completedTransactions: this.transactionService.getTransactions({
         status: 'COMPLETED',
@@ -216,49 +396,82 @@ export class DashboardComponent implements OnInit {
         size: 1,
         sort: 'id,desc',
       }).pipe(
-        catchError(() => of({ content: [], pageable: { totalElements: 0, totalPages: 0, pageSize: 1, pageNumber: 0 } }))
+        catchError(() => of({ payload: { content: [], pageable: { totalElements: 0, totalPages: 0, pageNumber: 0, pageSize: 1 } } } as any))
       ),
     }).subscribe({
       next: ({
-        equipment,
-        pendingRequests,
-        approvedRequests,
-        rejectedRequests,
-        completedRequests,
-        recentPendingRequests,
-        recentTransactions,
-        pendingTransactions,
-        completedTransactions,
-      }) => {
-        const availableEquipment = equipment.filter(
+               equipmentRes,
+               pendingRequests,
+               approvedRequests,
+               rejectedRequests,
+               completedRequests,
+               recentPendingRequests,
+               recentTransactions,
+               pendingTransactions,
+               completedTransactions,
+             }) => {
+        // Safely extract equipment array
+        const rawEquipment: any = equipmentRes;
+        const equipmentList: Equipment[] = Array.isArray(rawEquipment)
+          ? rawEquipment
+          : Array.isArray(rawEquipment?.payload)
+            ? rawEquipment.payload
+            : Array.isArray(rawEquipment?.payload?.content)
+              ? rawEquipment.payload.content
+              : [];
+
+        // Equipment Status Filtering
+        const availableEquipment = equipmentList.filter(
           (item) => item.status === 'AVAILABLE',
         );
-        const issuedEquipment = equipment.filter(
+        const issuedEquipment = equipmentList.filter(
           (item) => item.status === 'ISSUED',
         );
-        const maintenanceEquipment = equipment.filter(
+        const maintenanceEquipment = equipmentList.filter(
           (item) => item.status === 'MAINTENANCE',
         );
-        const returnedEquipment = equipment.filter(
+        const returnedEquipment = equipmentList.filter(
           (item) => item.status === 'RETURNED',
         );
-        const disposedEquipment = equipment.filter(
+        const disposedEquipment = equipmentList.filter(
           (item) => item.status === 'DISPOSED',
         );
-        const requestResolutionCount =
-          (approvedRequests.pageable?.totalElements ?? 0) +
-          (rejectedRequests.pageable?.totalElements ?? 0) +
-          (completedRequests.pageable?.totalElements ?? 0);
-        const pendingTransactionCount =
-          pendingTransactions.pageable?.totalElements ?? 0;
-        const completedTransactionCount =
-          completedTransactions.pageable?.totalElements ?? 0;
 
-        this.inventorySummary.set(equipment);
+        // Safe total elements extraction helper
+        const getTotal = (res: any): number => {
+          const payload = res?.payload;
+          return (
+            payload?.totalElements ??
+            payload?.pageable?.totalElements ??
+            res?.totalElements ??
+            0
+          );
+        };
+
+        // Safe array content extraction helper
+        const getArrayContent = <T>(res: any): T[] => {
+          if (Array.isArray(res)) return res;
+          if (Array.isArray(res?.content)) return res.content;
+          if (Array.isArray(res?.payload?.content)) return res.payload.content;
+          if (Array.isArray(res?.payload)) return res.payload;
+          return [];
+        };
+
+        const pendingRequestCount = getTotal(pendingRequests);
+        const approvedCount = getTotal(approvedRequests);
+        const rejectedCount = getTotal(rejectedRequests);
+        const completedCount = getTotal(completedRequests);
+
+        const requestResolutionCount = approvedCount + rejectedCount + completedCount;
+
+        const pendingTransactionCount = getTotal(pendingTransactions);
+        const completedTransactionCount = getTotal(completedTransactions);
+
+        this.inventorySummary.set(equipmentList);
         this.dashboardCards.set([
           {
             label: 'Total Equipment',
-            value: String(equipment.length),
+            value: String(equipmentList.length),
             note: 'Registered assets across the inventory.',
             tone: 'blue',
           },
@@ -277,7 +490,7 @@ export class DashboardComponent implements OnInit {
           {
             label: 'Equipment in Maintenance',
             value: String(maintenanceEquipment.length),
-            note: 'Currently In Maintanance.',
+            note: 'Currently In Maintenance.',
             tone: 'rose',
           },
           {
@@ -294,7 +507,7 @@ export class DashboardComponent implements OnInit {
           },
           {
             label: 'Pending Requests',
-            value: String(pendingRequests.pageable?.totalElements ?? 'N/A'),
+            value: String(pendingRequestCount),
             note: 'Requests waiting for review.',
             tone: 'rose',
           },
@@ -306,12 +519,15 @@ export class DashboardComponent implements OnInit {
           },
         ]);
 
-        this.recentRequests.set(
-          (recentPendingRequests.content || []).slice(0, 5),
-        );
-        this.recentTransactions.set(
-          (recentTransactions.content || []).slice(0, 5),
-        );
+        // Robust extraction for recent items queue
+        const recentReqList = getArrayContent<EquipmentRequest>(recentPendingRequests);
+        const recentTxList = getArrayContent<EquipmentTransaction>(recentTransactions);
+
+        console.log('Officer Dashboard - Extracted Recent Requests:', recentReqList);
+        console.log('Officer Dashboard - Extracted Recent Transactions:', recentTxList);
+
+        this.recentRequests.set(recentReqList.slice(0, 5));
+        this.recentTransactions.set(recentTxList.slice(0, 5));
 
         this.isLoadingDashboard = false;
       },
@@ -321,6 +537,8 @@ export class DashboardComponent implements OnInit {
       },
     });
   }
+
+
 
   toggleSidebar(): void {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
@@ -332,13 +550,10 @@ export class DashboardComponent implements OnInit {
 
   isRouteActive(path: string): boolean {
     const currentUrl = this.router.url;
-    // return this.router.url.includes(path);
 
     if (path === 'dashboard') {
-      // Matches exact '/dashboard' or '/dashboard/' root path only
       return currentUrl === '/dashboard' || currentUrl === '/dashboard/';
     }
-    // For sub-routes like 'requests', 'transactions', 'equipment', 'keyphrase', 'change-password'
     return currentUrl.includes(`/dashboard/${path}`);
   }
 
