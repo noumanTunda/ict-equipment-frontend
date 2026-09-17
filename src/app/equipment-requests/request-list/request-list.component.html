@@ -366,7 +366,7 @@
                 label="Return Asset Number"
                 placeholder="Search issued asset by number, model or type..."
                 [required]="true"
-                [selectedValue]="requestForm.get('returnAssetNumber')?.value"
+                [selectedValue]="requestForm.get('returnEquipmentId')?.value"
                 (selectedValueChange)="onReturnAssetSelected($event)"
               ></app-searchable-select>
             </div>
@@ -461,6 +461,12 @@
               <span class="font-semibold">Reason:</span>
               {{ selectedRequest.reason }}
             </div>
+            @if (selectedRequest.requestType === "RETURN" && selectedRequest.returnAssetNumber) {
+              <div>
+                <span class="font-semibold">Return Equipment:</span>
+                {{ selectedRequest.returnAssetNumber }}
+              </div>
+            }
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-1 gap-4">
@@ -480,10 +486,7 @@
               </div>
             }
 
-            @if (
-              selectedRequest.requestType === "RETURN" ||
-              selectedRequest.requestType === "EXCHANGE"
-              ) {
+            @if (selectedRequest.requestType === "EXCHANGE") {
               <div>
                 <app-searchable-select
                   [options]="approvalReturnAssetOptions"
