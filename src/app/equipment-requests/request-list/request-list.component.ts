@@ -144,7 +144,7 @@ export class RequestListComponent implements OnInit {
       requestType: ['ISSUE' as RequestType, [Validators.required]],
       reason: ['', [Validators.required, Validators.minLength(5)]],
       preferredEquipmentType: ['LAPTOP'],
-      returnAssetNumber: [''],
+      returnEquipmentId: [null],
       issueAssetNumber: [''],
     });
 
@@ -358,7 +358,7 @@ export class RequestListComponent implements OnInit {
 
   get submitReturnAssetOptions() {
     return this.returnAssetOptions.map(eq => ({
-      value: eq.assetNumber,
+      value: eq.id,
       label: `${eq.assetNumber} - ${eq.brandModel} (${eq.equipmentType})`
     }));
   }
@@ -577,11 +577,11 @@ export class RequestListComponent implements OnInit {
     this.approveReturnAssetSearch.set('');
   }
 
-  onReturnAssetSelected(assetNumber: string): void {
-    this.requestForm.get('returnAssetNumber')?.setValue(assetNumber);
+  onReturnAssetSelected(equipmentId: number): void {
+    this.requestForm.get('returnEquipmentId')?.setValue(equipmentId);
 
     // Find the equipment and set the preferred equipment type based on the selected asset
-    const equipment = this.returnAssetOptions.find(eq => eq.assetNumber === assetNumber);
+    const equipment = this.returnAssetOptions.find(eq => eq.id === equipmentId);
     if (equipment && equipment.equipmentType) {
       this.requestForm.get('preferredEquipmentType')?.setValue(equipment.equipmentType);
     }
@@ -781,10 +781,18 @@ export class RequestListComponent implements OnInit {
       return;
     }
 
-    if (val.requestType === 'RETURN' && !val.returnAssetNumber) {
+    if (val.requestType === 'RETURN' && !val.returnEquipmentId) {
       this.toastService.warning(
         'Validation Error',
-        'Return Asset Number is required for Return requests.',
+        'Return Equipment is required for Return requests.',
+      );
+      return;
+    }
+
+    if (val.requestType === 'EXCHANGE' && !val.returnEquipmentId) {
+      this.toastService.warning(
+        'Validation Error',
+        'Return Equipment is required for Exchange requests.',
       );
       return;
     }
@@ -843,8 +851,7 @@ export class RequestListComponent implements OnInit {
           ? raw.issueAssetNumber
           : undefined,
       returnAssetNumber:
-        (requestType === 'RETURN' || requestType === 'EXCHANGE') &&
-        raw.returnAssetNumber
+        requestType === 'EXCHANGE' && raw.returnAssetNumber
           ? raw.returnAssetNumber
           : undefined,
       checklist,
