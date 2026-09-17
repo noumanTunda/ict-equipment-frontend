@@ -15,6 +15,7 @@ export interface EquipmentRequest {
   requestType: RequestType;
   reason: string;
   returnAssetNumber: string | null;
+  returnEquipmentId: number | null;
   issueAssetNumber: string | null;
   preferredEquipmentType: EquipmentType;
   status: RequestStatus;
@@ -30,7 +31,7 @@ export interface EquipmentRequest {
 export interface CreateEquipmentRequestDto {
   requestType: RequestType;
   reason: string;
-  returnAssetNumber?: string;
+  returnEquipmentId?: number;
   issueAssetNumber?: string;
   preferredEquipmentType: EquipmentType;
   keyphrase?: string;
