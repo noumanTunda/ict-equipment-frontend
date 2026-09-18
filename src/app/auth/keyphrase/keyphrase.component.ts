@@ -47,9 +47,15 @@ export class KeyphraseComponent implements OnInit {
   }
 
   checkKeyphraseStatus(): void {
-    // For now, we'll assume user doesn't have a keyphrase set
-    // In a real implementation, you might want to add an endpoint to check this
-    this.hasKeyphrase = false;
+    this.keyphraseService.checkKeyphraseStatus().subscribe({
+      next: (hasKeyphrase) => {
+        this.hasKeyphrase = hasKeyphrase;
+      },
+      error: () => {
+        // If endpoint fails, assume no keyphrase is set for backward compatibility
+        this.hasKeyphrase = false;
+      },
+    });
   }
 
   setKeyphrase(): void {
