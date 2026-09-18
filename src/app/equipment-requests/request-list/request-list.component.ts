@@ -93,10 +93,10 @@ export class RequestListComponent implements OnInit {
   equipmentAccessories: Record<string, string[]> = {
     LAPTOP: ['Charger', 'Mouse', 'Carrying Bag', 'External HDD', 'Headset','Mouse Pad','Docking Station','Laptop Stand'],
     DESKTOP: ['Keyboard', 'Mouse', 'Speakers','Web Cam','Bluetooth Adapter','Wi-Fi Adapter'],
-    UPS: ['Power Cord', 'USB Cable', 'Manual','UPS Stand'],
-    SCANNER: ['Power Cord', 'USB Cable', 'Driver CD', 'Manual'],
-    PRINTER: ['Power Cord', 'USB Cable', 'Driver CD', 'Paper Tray', 'Manual'],
-    MONITOR: ['Power Cord', 'HDMI Cable', 'VGA Cable','Monitor Arm', 'Light Bar', 'USB B Cable'],
+    UPS: ['Power Cable', 'USB Cable', 'Manual','UPS Stand'],
+    SCANNER: ['Power Cable', 'USB Cable', 'Driver CD', 'Manual'],
+    PRINTER: ['Power Cable', 'USB Cable', 'Driver CD', 'Paper Tray', 'Manual'],
+    MONITOR: ['Power Cable', 'HDMI Cable', 'VGA Cable','Monitor Arm', 'Light Bar', 'USB B Cable'],
     OTHER: []
   };
 
@@ -148,6 +148,17 @@ export class RequestListComponent implements OnInit {
       issueAssetNumber: [''],
     });
 
+    // Add dynamic validator for returnEquipmentId based on request type
+    this.requestForm.get('requestType')?.valueChanges.subscribe((requestType) => {
+      const returnEquipmentIdControl = this.requestForm.get('returnEquipmentId');
+      if (requestType === 'RETURN' || requestType === 'EXCHANGE') {
+        returnEquipmentIdControl?.setValidators([Validators.required]);
+      } else {
+        returnEquipmentIdControl?.clearValidators();
+      }
+      returnEquipmentIdControl?.updateValueAndValidity();
+    });
+
     this.approveForm = this.fb.group({
       issueAssetNumber: [''],
       returnAssetNumber: [''],
@@ -157,7 +168,7 @@ export class RequestListComponent implements OnInit {
       checklist: this.fb.group({
         osInstalled: ['Windows 11 Pro', [Validators.required]],
         appSystemInstalled: [
-          'Office 365, Enterprise Antivirus',
+          'Office 365, Anydesk',
           [Validators.required],
         ],
         antiVirusInstalled: [
@@ -202,8 +213,7 @@ export class RequestListComponent implements OnInit {
         this.staffUsers = users.filter((user) =>
           (user.role || '').toUpperCase().includes('STAFF'),
         );
-        // If an approval modal is already open while users finish loading,
-        // refresh the default asset selection against the request filters.
+        // If an approval modal is already open while users finish loading,refresh the default asset selection against the request filters.
         if (this.isApproveModalOpen && this.selectedRequest) {
           this.afterApprovalRequestDetailLoaded();
         }
@@ -473,6 +483,7 @@ export class RequestListComponent implements OnInit {
     this.requestForm.reset({
       requestType: 'ISSUE',
       preferredEquipmentType: 'LAPTOP',
+      returnEquipmentId: null,
     });
     this.requestKeyphrase = '';
     this.submitReturnAssetSearch.set('');
@@ -506,9 +517,7 @@ export class RequestListComponent implements OnInit {
     this.configureApprovalChecklistValidators();
     this.isApproveModalOpen = true;
 
-    // Always fetch the full request before showing the asset dropdown. The
-    // list endpoint may omit preferredEquipmentType, so this ensures the
-    // correct type filter is applied during approval.
+    // Always fetch the full request before showing the asset dropdown. The list endpoint may omit preferredEquipmentType, so this ensures the correct type filter is applied during approval.
     this.requestService.getRequestById(reqItem.id).subscribe({
       next: (hydrated) => {
         if (!this.isApproveModalOpen) {
@@ -577,7 +586,12 @@ export class RequestListComponent implements OnInit {
     this.approveReturnAssetSearch.set('');
   }
 
-  onReturnAssetSelected(equipmentId: number): void {
+  onReturnAssetSelected(equipmentId: number | null): void {
+    if (equipmentId === null || equipmentId === undefined) {
+      this.requestForm.get('returnEquipmentId')?.setValue(null);
+      return;
+    }
+
     this.requestForm.get('returnEquipmentId')?.setValue(equipmentId);
 
     // Find the equipment and set the preferred equipment type based on the selected asset
@@ -604,19 +618,22 @@ export class RequestListComponent implements OnInit {
           const returnedAssetNumbers = new Set<string>();
           const issuedAssetMeta = new Map<
             string,
-            { equipmentType: string; brandModel: string }
+            { equipmentId: number; equipmentType: string; brandModel: string }
           >();
 
           for (const transaction of transactions) {
             for (const issued of transaction.issuedItems || []) {
               issuedAssetNumbers.add(issued.assetNumber);
               issuedAssetMeta.set(issued.assetNumber, {
+                equipmentId: issued.id || 0,
                 equipmentType: issued.equipmentType || 'Equipment',
                 brandModel:
                   issued.accessoriesProvided ||
                   issued.equipmentType ||
                   'Issued Asset',
               });
+              console.log(issuedAssetMeta);
+              console.log(issued);
             }
 
             for (const returned of transaction.returnedItems || []) {
@@ -629,37 +646,24 @@ export class RequestListComponent implements OnInit {
           this.returnAssetOptions = Array.from(issuedAssetNumbers)
             .filter((assetNumber) => !returnedAssetNumbers.has(assetNumber))
             .map((assetNumber) => {
-              const equipment = this.allEquipment.find(
-                (item) => item.assetNumber === assetNumber,
-              );
-
-              if (equipment) {
-                // Filter by department if specified
-                if (staffDepartment && equipment.department !== staffDepartment) {
-                  return null;
-                }
-                return equipment;
-              }
-
               const meta = issuedAssetMeta.get(assetNumber);
-              const fallbackEquipment = {
-                id: 0,
+              const equipment = {
+                id: meta?.equipmentId || 0,
                 assetNumber,
                 serialNumber: '',
                 equipmentType: meta?.equipmentType || 'Equipment',
                 brandModel: meta?.brandModel || 'Issued Asset',
                 supplierDetails: '',
                 description: '',
+                department: staffDepartment || '',
                 status: 'ISSUED',
                 hasWarranty: false,
                 createdAt: '',
                 updatedAt: '',
               } as Equipment;
 
-              // For fallback equipment, we can't filter by department since we don't have that info
-              return fallbackEquipment;
-            })
-            .filter((eq): eq is Equipment => eq !== null);
+              return equipment;
+            });
           this.isLoadingReturnAssets = false;
         },
         error: () => {
@@ -707,8 +711,7 @@ export class RequestListComponent implements OnInit {
   private hydrateMissingPreferredEquipmentTypes(
     requests: EquipmentRequest[],
   ): void {
-    // The list endpoint may not include preferredEquipmentType, so we need to
-    // fetch the full request details for any requests missing this field
+    // The list endpoint may not include preferredEquipmentType, so fetch the full request details for any requests missing this field
     const missingRequests = requests.filter(
       (request) => !request.preferredEquipmentType || request.preferredEquipmentType === '' as any,
     );
@@ -777,22 +780,6 @@ export class RequestListComponent implements OnInit {
       this.toastService.warning(
         'Keyphrase Required',
         'Please enter your keyphrase (min 6 characters) before submitting the request.',
-      );
-      return;
-    }
-
-    if (val.requestType === 'RETURN' && !val.returnEquipmentId) {
-      this.toastService.warning(
-        'Validation Error',
-        'Return Equipment is required for Return requests.',
-      );
-      return;
-    }
-
-    if (val.requestType === 'EXCHANGE' && !val.returnEquipmentId) {
-      this.toastService.warning(
-        'Validation Error',
-        'Return Equipment is required for Exchange requests.',
       );
       return;
     }
