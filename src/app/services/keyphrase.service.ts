@@ -27,6 +27,12 @@ export class KeyphraseService {
       .pipe(map(() => undefined));
   }
 
+  checkKeyphraseStatus(): Observable<boolean> {
+    return this.http
+      .get<ApiResponse<boolean>>(`${this.userUrl}/keyphrase/status`)
+      .pipe(map((res) => res.payload));
+  }
+
   signTransactionAsEmployee(transactionId: number, keyphrase: string): Observable<any> {
     return this.http
       .post<ApiResponse<any>>(
